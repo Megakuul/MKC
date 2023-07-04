@@ -1,0 +1,9 @@
+Package: xmdr
+Version: 1.0
+Section: utils
+Priority: optional
+Architecture: all
+Depends: libgtkmm-3.0-1v5 (>= 3.22)
+Maintainer: Megakuul megakuul@gmx.ch
+Description: Totalr Commandr
+    For Linux
