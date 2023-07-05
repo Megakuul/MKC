@@ -1,27 +1,33 @@
 #include <gtkmm.h>
 #include <iostream>
+#include <main.hpp>
+#include <Toolbar.hpp>
 
-class HelloWorldWindow : public Gtk::Window {
-public:
-    HelloWorldWindow() {
-        set_title("Hello, World!");
-        m_button.set_label("Click me!");
-        m_button.signal_clicked().connect(sigc::mem_fun(*this, &HelloWorldWindow::on_button_clicked));
-        add(m_button);
-        show_all();
-    }
+using namespace std;
 
-protected:
-    void on_button_clicked() {
-        std::cout << "Hello, World!" << std::endl;
-    }
+MainWindow::MainWindow() : m_Box(Gtk::ORIENTATION_VERTICAL), m_Toolbar() {
+   // The 'this' is not required here, but I feel like it is more readable with it
+   this->set_title("XMDR");
+   this->set_border_width(0);
+   this->set_default_size(600, 400);
 
-private:
-    Gtk::Button m_button;
-};
+   this->add(m_Box);
+   this->m_Box.pack_start(m_Toolbar, Gtk::PACK_SHRINK);
 
-int main(int argc, char *argv[]) {
-    auto app = Gtk::Application::create(argc, argv);
-    HelloWorldWindow window;
-    return app->run(window);
+   show_all_children();
+}
+
+MainWindow::~MainWindow()
+{
+
+}
+
+int main(int argc, char *argv[])
+{
+   auto app = Gtk::Application::create(argc, argv, "xmdr.megakuul.ch");
+
+   MainWindow window;
+
+   //Shows the window and returns when it is closed.
+   return app->run(window);
 }

@@ -6,7 +6,8 @@
                 "${workspaceFolder}/**",
                 "/usr/include/**",
                 "/usr/lib/**",
-                "/usr/lib64/**"
+                "/usr/lib64/**",
+                "/usr/include/gtkmm-3.0"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/g++",
