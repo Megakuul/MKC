@@ -14,7 +14,7 @@ protected:
 
     Gtk::ToolButton AFileBtn;
     Gtk::ToolButton ADirBtn;
-    Gtk::ToggleButton ToggleBtn;   
+    Gtk::ToggleButton ToggleBtn;
 };
 
 #endif

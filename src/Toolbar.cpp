@@ -1,5 +1,6 @@
 #include <gtkmm.h>
 #include <Toolbar.hpp>
+#include <Modal.hpp>
 #include <iostream>
 #include <string>
 
@@ -20,23 +21,19 @@ Toolbar::Toolbar() : AFileBtn(), ADirBtn("+D"), ToggleBtn() {
 }
 
 void Toolbar::AFileBtn_clicked() {
-    Gtk::Dialog dial("Enter File Name");
-    Gtk::Entry entry;
-    entry.show();
-    dial.get_content_area()->pack_start(entry);
-    dial.add_button("Cancel", Gtk::RESPONSE_CANCEL);
-    dial.add_button("Apply", Gtk::RESPONSE_APPLY);
-
     string filename;
-    int result = dial.run();
-    if (result == Gtk::RESPONSE_APPLY)
-        filename = entry.get_text();
+
+    unique_ptr<Modal> mod = make_unique<Modal>("Enter File Name", filename);
         
     std::cout<<filename<<std::endl;
 }
 
 void Toolbar::ADirBtn_clicked() {
-    std::cout<<"Create Dir Here"<<std::endl;
+    string dirname;
+
+    unique_ptr<Modal> mod = make_unique<Modal>("Enter Dir Name", dirname);
+
+    std::cout<<dirname<<std::endl;
 }
 
 Toolbar::~Toolbar() {
