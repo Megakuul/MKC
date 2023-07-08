@@ -6,10 +6,12 @@
 
 class Modal : public Gtk::Dialog {
 public:
-    Modal(std::string title, std::string& input);
+    Modal(std::string label, std::string& input, Gtk::Window *Parent);
 
 protected:
     Gtk::Entry entry;
+    Gtk::Label title;
+    void on_activate(std::string &input);
 };
 
 #endif

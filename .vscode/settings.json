@@ -58,6 +58,23 @@
         "thread": "cpp",
         "cinttypes": "cpp",
         "typeinfo": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "bitset": "cpp",
+        "charconv": "cpp",
+        "codecvt": "cpp",
+        "complex": "cpp",
+        "forward_list": "cpp",
+        "unordered_set": "cpp",
+        "optional": "cpp",
+        "format": "cpp",
+        "fstream": "cpp",
+        "future": "cpp",
+        "iomanip": "cpp",
+        "span": "cpp",
+        "stdfloat": "cpp",
+        "variant": "cpp",
+        "csetjmp": "cpp",
+        "source_location": "cpp",
+        "cfenv": "cpp"
     }
 }

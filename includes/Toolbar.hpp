@@ -5,12 +5,12 @@
 
 class Toolbar : public Gtk::Toolbar {
 public:
-    Toolbar();
+    Toolbar(Gtk::Window *Parent);
     virtual ~Toolbar();
 
 protected:
-    void AFileBtn_clicked();
-    void ADirBtn_clicked();
+    void AFileBtn_clicked(Gtk::Window *Parent);
+    void ADirBtn_clicked(Gtk::Window *Parent);
 
     Gtk::ToolButton AFileBtn;
     Gtk::ToolButton ADirBtn;

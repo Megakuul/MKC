@@ -8,11 +8,11 @@ class MainWindow : public Gtk::Window
 {
 public:
   MainWindow();
-  virtual ~MainWindow();
 
-  //Child widgets:
+protected:
   Gtk::Box m_Box;
   Toolbar m_Toolbar;
+  bool onKeyPress(GdkEventKey* event);
 };
 
 #endif

@@ -6,13 +6,12 @@
                 "${workspaceFolder}/**",
                 "/usr/include/**",
                 "/usr/lib/**",
-                "/usr/lib64/**",
-                "/usr/include/gtkmm-3.0"
+                "/usr/lib64/**"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/g++",
             "cStandard": "c17",
-            "cppStandard": "c++14",
+            "cppStandard": "c++17",
             "intelliSenseMode": "linux-gcc-x64"
         }
     ],
