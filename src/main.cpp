@@ -3,10 +3,11 @@
 #include <main.hpp>
 #include <Toolbar.hpp>
 #include <bridge.hpp>
+#include <ctime>
 
 using namespace std;
 
-MainWindow::MainWindow() : m_Box(Gtk::ORIENTATION_VERTICAL), m_Toolbar(this) {
+MainWindow::MainWindow() : m_Box(Gtk::ORIENTATION_VERTICAL), m_Toolbar(this), m_Browser() {
    // The 'this' is not required here, but I feel like it is more readable with it
    this->set_title("XMDR");
    this->set_border_width(0);
@@ -14,6 +15,15 @@ MainWindow::MainWindow() : m_Box(Gtk::ORIENTATION_VERTICAL), m_Toolbar(this) {
 
    this->add(m_Box);
    this->m_Box.pack_start(m_Toolbar, Gtk::PACK_SHRINK);
+   this->m_Box.pack_start(m_Browser);
+
+   m_Browser.AddElement("234", "das isssess", "f", "755", "root", time(nullptr));
+
+   m_Browser.AddElement("53", "das isssess", "f", "755", "root", time(nullptr));
+
+   m_Browser.AddElement("2344", "das isssess dir", "d", "754", "schlumpf", time(nullptr));
+
+   m_Browser.AddElement("10", "Das File der unbegrenzten Machts", "f", "777", "root", time(nullptr));
 
    this->signal_key_press_event().connect(sigc::mem_fun(
       *this,

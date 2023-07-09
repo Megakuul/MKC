@@ -15,7 +15,7 @@ namespace bridge {
     string filename;
 
     try {
-      unique_ptr<Modal> mod = make_unique<Modal>("Create File", filename, Parent);
+      Modal mod("Create File", filename, Parent);
     } catch (runtime_error error) {
       // TODO: Implement an error Dialog
       cout<<error.what()<<endl;
@@ -37,7 +37,7 @@ namespace bridge {
     string dirname;
 
     try {
-      unique_ptr<Modal> mod = make_unique<Modal>("Create Directory", dirname, Parent);
+      Modal mod("Create Directory", dirname, Parent);
     } catch (runtime_error error) {
       // TODO: Implement an error Dialog
       cout<<error.what()<<endl;
