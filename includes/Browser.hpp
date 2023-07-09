@@ -29,7 +29,7 @@ public:
     Gtk::TreeModelColumn<Glib::ustring> id;
     Gtk::TreeModelColumn<Glib::ustring> name;
     Gtk::TreeModelColumn<Glib::ustring> type;
-    Gtk::TreeModelColumn<Glib::DateTime> lastEdited;
+    Gtk::TreeModelColumn<std::time_t> lastEdited;
     Gtk::TreeModelColumn<Glib::ustring> access;
     Gtk::TreeModelColumn<Glib::ustring> owner;
   };

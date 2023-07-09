@@ -23,7 +23,7 @@ MainWindow::MainWindow() : m_Box(Gtk::ORIENTATION_VERTICAL), m_Toolbar(this), m_
 
    m_Browser.AddElement("2344", "das isssess dir", "d", "754", "schlumpf", time(nullptr));
 
-   m_Browser.AddElement("10", "Das File der unbegrenzten Machts", "f", "777", "root", time(nullptr));
+   m_Browser.AddElement("10", "Das File der unbegrenzten Machts ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd", "f", "777", "root", time(nullptr));
 
    this->signal_key_press_event().connect(sigc::mem_fun(
       *this,

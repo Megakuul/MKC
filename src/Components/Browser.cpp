@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 #include <ctime>
+#include <iomanip>
 
 using namespace std;
 
@@ -13,23 +14,78 @@ Browser::Browser() {
 
   set_model(m_listStore);
 
-  append_column("ID", m_columns.id);
-  get_column(0)->set_max_width(50);
+  // ID of the element
+  auto* idRenderer = Gtk::manage(new Gtk::CellRendererText());
+  auto* id = Gtk::manage(new Gtk::TreeViewColumn(
+    "ID",
+    *idRenderer
+  ));
+  id->add_attribute(idRenderer->property_text(), m_columns.id);
+  id->set_max_width(50);
+  append_column(*id);
+  
+  // Type of the element (f/d)
+  auto* typeRenderer = Gtk::manage(new Gtk::CellRendererText());
+  auto* type = Gtk::manage(new Gtk::TreeViewColumn(
+    "T",
+    *typeRenderer
+  ));
+  type->add_attribute(typeRenderer->property_text(), m_columns.type);
+  type->set_max_width(50);
+  append_column(*type);
 
-  append_column("Type", m_columns.type);
-  get_column(1)->set_max_width(50);
+  // Name of the element
+  auto* nameRenderer = Gtk::manage(new Gtk::CellRendererText());
+  auto* name = Gtk::manage(new Gtk::TreeViewColumn(
+    "Name",
+    *nameRenderer
+  ));
+  name->add_attribute(nameRenderer->property_text(), m_columns.name);
+  name->set_max_width(200);
+  append_column(*name);
 
-  append_column("Name", m_columns.name);
-  get_column(2)->set_max_width(200);
+  // Accessrights of the element
+  auto* accessRenderer = Gtk::manage(new Gtk::CellRendererText());
+  auto* access = Gtk::manage(new Gtk::TreeViewColumn(
+    "Access",
+    *accessRenderer
+  ));
+  access->add_attribute(accessRenderer->property_text(), m_columns.access);
+  access->set_max_width(100);
+  append_column(*access);
 
-  append_column("Access", m_columns.access);
-  get_column(3)->set_max_width(100);
+  // Owner of the element
+  auto* ownerRenderer = Gtk::manage(new Gtk::CellRendererText());
+  auto* owner = Gtk::manage(new Gtk::TreeViewColumn(
+    "Owner",
+    *ownerRenderer
+  ));
+  owner->add_attribute(ownerRenderer->property_text(), m_columns.owner);
+  owner->set_max_width(100);
+  append_column(*owner);
 
-  append_column("Owner", m_columns.owner);
-  get_column(4)->set_max_width(100);
+  // LastModified attribute of the element
+  auto* lastEditedRenderer = Gtk::manage(new Gtk::CellRendererText());
+  auto* lastEdited = Gtk::manage(new Gtk::TreeViewColumn(
+    "Last Modified",
+    *lastEditedRenderer
+  ));
+  lastEdited->add_attribute(lastEditedRenderer->property_text(), m_columns.lastEdited);
+  lastEdited->set_max_width(120);
+  // This Custom Cell renderer along the Lambda function for the cell is there to set the date to a local format
+  // The set_cell_data_func is always executed if a cell needs to rerender
+  lastEdited->set_cell_data_func(*lastEditedRenderer,[this](Gtk::CellRenderer* renderer, const Gtk::TreeModel::iterator& iter) {
+    // Get column 'lastEdited' from the current row (edited row)
+    const std::time_t& origin_time = (*iter)[m_columns.lastEdited];
 
-  append_column("Date", m_columns.lastEdited);
-  get_column(5)->set_max_width(120);
+    std::tm* loc_time = std::localtime(&origin_time);
+
+    std::stringstream ss;
+    ss << std::put_time(loc_time, "%H:%M %Y-%m-%d");
+
+    dynamic_cast<Gtk::CellRendererText*>(renderer)->property_text() = ss.str();
+  });
+  append_column(*lastEdited);
 
   m_listStore->set_sort_column(m_columns.lastEdited, Gtk::SORT_ASCENDING);
 }
@@ -47,11 +103,7 @@ void Browser::AddElement(const string id,
   row[m_columns.type] = type;
   row[m_columns.access] = access;
   row[m_columns.owner] = owner;
-
-  // TODO: This is not working right now
-  Glib::DateTime dateTime = Glib::DateTime::create_now_local(lastEdited);
-
-  row[m_columns.lastEdited] = dateTime;
+  row[m_columns.lastEdited] = lastEdited;
 }
 
 void Browser::RemoveElement(const string& id) {
