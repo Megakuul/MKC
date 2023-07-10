@@ -8,30 +8,35 @@ class Browser : public Gtk::TreeView {
 
 public:
   Browser();
-  void AddElement(const std::string id,
-                  const std::string name,
-                  const std::string type, 
+  std::string CurrentPath; 
+
+  void AddElement(const std::string name,
+                  const std::string type,
+                  const std::string hardlinks, 
+                  const int size, 
                   const std::string access, 
-                  const std::string owner, 
                   const std::time_t lastEdited);
+
   void RemoveElement(const std::string& id);
+
+  void ClearElements();
 
   class ModelColumns : public Gtk::TreeModel::ColumnRecord {
   public:
     ModelColumns() {
-      add(id);
       add(name);
       add(type);
-      add(lastEdited);
+      add(hardlinks);
+      add(size);
       add(access);
-      add(owner);
+      add(lastEdited);
     }
-    Gtk::TreeModelColumn<Glib::ustring> id;
     Gtk::TreeModelColumn<Glib::ustring> name;
     Gtk::TreeModelColumn<Glib::ustring> type;
-    Gtk::TreeModelColumn<std::time_t> lastEdited;
+    Gtk::TreeModelColumn<Glib::ustring> hardlinks;
+    Gtk::TreeModelColumn<int> size;
     Gtk::TreeModelColumn<Glib::ustring> access;
-    Gtk::TreeModelColumn<Glib::ustring> owner;
+    Gtk::TreeModelColumn<std::time_t> lastEdited;
   };
 
 private:

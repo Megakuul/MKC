@@ -9,6 +9,12 @@ namespace fs = filesystem;
 
 namespace fsutil {
 
+  fs::directory_iterator GetDirectoryContent(string location) {
+    fs::path dirpath(location);
+
+    return fs::directory_iterator(dirpath);
+  }
+
   void AddFile(string location, string name) {
     fs::path fPath = location;
     fPath.append(name);

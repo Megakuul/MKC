@@ -11,9 +11,14 @@ public:
   MainWindow();
 
 protected:
-  Gtk::Box m_Box;
+  Gtk::Box m_MainBox;
   Toolbar m_Toolbar;
-  Browser m_Browser;
+  Gtk::Entry m_Pathentry;
+  Gtk::Box m_SplitBox;
+  Browser m_Browser_1;
+  Browser m_Browser_2;
+  Gtk::ScrolledWindow m_Scrollable_1;
+  Gtk::ScrolledWindow m_Scrollable_2;
   bool onKeyPress(GdkEventKey* event);
 };
 

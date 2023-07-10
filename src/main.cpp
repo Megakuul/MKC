@@ -7,25 +7,38 @@
 
 using namespace std;
 
-MainWindow::MainWindow() : m_Box(Gtk::ORIENTATION_VERTICAL), m_Toolbar(this), m_Browser() {
-   // The 'this' is not required here, but I feel like it is more readable with it
-   this->set_title("XMDR");
-   this->set_border_width(0);
-   this->set_default_size(1000, 800);
+unique_ptr<string> CurrentContext = make_unique<string>("/");
 
-   this->add(m_Box);
-   this->m_Box.pack_start(m_Toolbar, Gtk::PACK_SHRINK);
-   this->m_Box.pack_start(m_Browser);
+MainWindow::MainWindow() : m_MainBox(Gtk::ORIENTATION_VERTICAL),
+                           m_Toolbar(this),
+                           m_Pathentry(),
+                           m_SplitBox(Gtk::ORIENTATION_HORIZONTAL),
+                           m_Browser_1(),
+                           m_Browser_2(),
+                           m_Scrollable_1(),
+                           m_Scrollable_2() {
 
-   m_Browser.AddElement("234", "das isssess", "f", "755", "root", time(nullptr));
+   set_title("XMDR");
+   set_name("mainwindow");
+   set_border_width(0);
+   set_default_size(1000, 800);
 
-   m_Browser.AddElement("53", "das isssess", "f", "755", "root", time(nullptr));
+   add(m_MainBox);
+   m_MainBox.pack_start(m_Toolbar, Gtk::PACK_SHRINK);
+   m_MainBox.pack_start(m_Pathentry, Gtk::PACK_SHRINK);
 
-   m_Browser.AddElement("2344", "das isssess dir", "d", "754", "schlumpf", time(nullptr));
+   m_Scrollable_1.add(m_Browser_1);
+   m_Scrollable_1.set_border_width(5);
+   m_Scrollable_2.add(m_Browser_2);
+   m_Scrollable_2.set_border_width(5);
+   m_SplitBox.pack_start(m_Scrollable_1);
+   m_SplitBox.pack_start(m_Scrollable_2);
+   m_MainBox.pack_start(m_SplitBox);
 
-   m_Browser.AddElement("10", "Das File der unbegrenzten Machts ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd", "f", "777", "root", time(nullptr));
+   bridge::wChangeDir(&m_Browser_1, "/usr/include");
+   bridge::wChangeDir(&m_Browser_2, "/");
 
-   this->signal_key_press_event().connect(sigc::mem_fun(
+   signal_key_press_event().connect(sigc::mem_fun(
       *this,
       &MainWindow::onKeyPress
    ), false);
