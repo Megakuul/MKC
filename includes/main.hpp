@@ -9,6 +9,7 @@ class MainWindow : public Gtk::Window
 {
 public:
   MainWindow();
+  Browser *CurrentBrowser;
 
 protected:
   Gtk::Box m_MainBox;
@@ -19,7 +20,8 @@ protected:
   Browser m_Browser_2;
   Gtk::ScrolledWindow m_Scrollable_1;
   Gtk::ScrolledWindow m_Scrollable_2;
-  bool onKeyPress(GdkEventKey* event);
+  bool on_key_press(GdkEventKey* event);
+  void on_pathentry_activate();
 };
 
 #endif

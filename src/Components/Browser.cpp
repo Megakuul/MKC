@@ -8,7 +8,7 @@
 
 using namespace std;
 
-Browser::Browser() : CurrentPath("/home/linus") {
+Browser::Browser(string basePath) : CurrentPath(basePath) {
   set_name("Filebrowser");
 
   m_listStore = Gtk::ListStore::create(m_columns);
@@ -119,7 +119,7 @@ Browser::Browser() : CurrentPath("/home/linus") {
     std::tm* loc_time = std::localtime(&origin_time);
 
     std::stringstream ss;
-    ss << std::put_time(loc_time, "%H:%M %m-%d");
+    ss << std::put_time(loc_time, "%H:%M %d-%m-%Y");
 
     dynamic_cast<Gtk::CellRendererText*>(renderer)->property_text() = ss.str();
   });
@@ -159,8 +159,5 @@ void Browser::RemoveElement(const string& name) {
 }
 
 void Browser::ClearElements() {
-  Gtk::TreeModel::Children rows = m_listStore->children();
-  for (auto iter = rows.begin(); iter!=rows.end(); ++iter) {
-    m_listStore->erase(iter);
-  }
+  m_listStore->clear();
 }

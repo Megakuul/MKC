@@ -16,8 +16,14 @@ int perm_to_int(fs::perms p);
 time_t get_time_from_filetime(const fs::file_time_type filetime);
 
 namespace bridge {
-  void wChangeDir(Browser* browser, string directory) {
+  void wChangeBrowser(Gtk::Window* mainWindow, Gtk::Entry *Pathentry, Browser*& currentBrowser, Browser* newBrowser) {
+    currentBrowser = newBrowser;
 
+    Pathentry->set_text(currentBrowser->CurrentPath);
+    mainWindow->set_focus(*currentBrowser);
+  }
+
+  void wChangeDir(Browser* browser, string directory) {
     try {
       auto new_contents = fsutil::GetDirectoryContent(directory);
 

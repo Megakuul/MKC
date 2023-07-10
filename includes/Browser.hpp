@@ -7,7 +7,7 @@
 class Browser : public Gtk::TreeView {
 
 public:
-  Browser();
+  Browser(std::string basePath);
   std::string CurrentPath; 
 
   void AddElement(const std::string name,
