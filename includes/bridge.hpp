@@ -10,7 +10,7 @@ namespace bridge {
 
   void wAddFile(Gtk::Window* Parent, std::string location);
   void wAddDir(Gtk::Window* Parent, std::string location);
-  void wChangeDir(Browser* browser, Gtk::Entry *pathentry, std::filesystem::path directory);
-  void wChangeBrowser(Gtk::Window* mainWindow, Gtk::Entry *pathentry, Browser*& currentBrowser, Browser* newBrowser);
+  void wChangeDir(Gtk::Window* Parent, Browser* browser, Gtk::Entry *pathentry, std::filesystem::path directory);
+  void wChangeBrowser(Gtk::Window* mainWindow, Browser* newBrowser);
 }
 #endif

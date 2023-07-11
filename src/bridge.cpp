@@ -16,14 +16,12 @@ int perm_to_int(fs::perms p);
 time_t get_time_from_filetime(const fs::file_time_type filetime);
 
 namespace bridge {
-  void wChangeBrowser(Gtk::Window* mainWindow, Gtk::Entry *pathentry, Browser*& currentBrowser, Browser* newBrowser) {
-    currentBrowser = newBrowser;
 
-    pathentry->set_text(currentBrowser->CurrentPath.c_str());
-    mainWindow->set_focus(*currentBrowser);
+  void wChangeBrowser(Gtk::Window* mainWindow, Browser* newBrowser) {
+    mainWindow->set_focus(*newBrowser);
   }
 
-  void wChangeDir(Browser* browser, Gtk::Entry *pathentry, fs::path directory) {
+  void wChangeDir(Gtk::Window* Parent, Browser* browser, Gtk::Entry *pathentry, fs::path directory) {
     try {
       auto new_contents = fs::directory_iterator(directory);
 
@@ -58,8 +56,9 @@ namespace bridge {
         }
       }
     } catch (const fs::filesystem_error error) {
-      // TODO: Implement an error Dialog
-      cout<<error.what()<<endl;
+      Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+      dial.set_secondary_text(error.what());
+      dial.run();
     }
   }
 
@@ -80,8 +79,9 @@ namespace bridge {
     try {
       fsutil::AddDir(location, filename);
     } catch (const fs::filesystem_error error) {
-      // TODO: Implement an error Dialog
-      cout<<error.what()<<endl;
+      Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+      dial.set_secondary_text(error.what());
+      dial.run();
     }
   }
 
@@ -102,8 +102,9 @@ namespace bridge {
     try {
       fsutil::AddDir(location, dirname);
     } catch (fs::filesystem_error error) {
-      // TODO: Implement an error Dialog
-      cout<<error.what()<<endl;
+      Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+      dial.set_secondary_text(error.what());
+      dial.run();
     }
   }
 }

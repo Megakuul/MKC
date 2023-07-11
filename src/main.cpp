@@ -15,8 +15,8 @@ MainWindow::MainWindow() : m_MainBox(Gtk::ORIENTATION_VERTICAL),
                            m_Returnbtn(),
                            m_Pathentry(),
                            m_SplitBox(Gtk::ORIENTATION_HORIZONTAL),
-                           m_Browser_1("/"),
-                           m_Browser_2("/"),
+                           m_Browser_1(this, "/", CurrentBrowser, &m_Pathentry),
+                           m_Browser_2(this, "/", CurrentBrowser, &m_Pathentry),
                            m_Scrollable_1(),
                            m_Scrollable_2(),
                            CurrentBrowser(&m_Browser_1) {
@@ -69,7 +69,7 @@ MainWindow::MainWindow() : m_MainBox(Gtk::ORIENTATION_VERTICAL),
    // MainBox //
 
    // Initial Navigate to the first Browser
-   bridge::wChangeBrowser(this, &m_Pathentry, CurrentBrowser, &m_Browser_1);
+   bridge::wChangeBrowser(this, &m_Browser_1);
 
    signal_key_press_event().connect(sigc::mem_fun(
       *this,
@@ -93,13 +93,13 @@ bool MainWindow::on_key_press(GdkEventKey* event)
             set_focus(m_Pathentry);
          break;
          case GDK_KEY_q:
-            bridge::wChangeBrowser(this, &m_Pathentry, CurrentBrowser, &m_Browser_1);
+            bridge::wChangeBrowser(this, &m_Browser_1);
          break;
          case GDK_KEY_e:
-            bridge::wChangeBrowser(this, &m_Pathentry, CurrentBrowser, &m_Browser_2);
+            bridge::wChangeBrowser(this, &m_Browser_2);
          break;
          case GDK_KEY_z:
-            bridge::wChangeDir(CurrentBrowser, &m_Pathentry, CurrentBrowser->CurrentPath.parent_path());
+            bridge::wChangeDir(this, CurrentBrowser, &m_Pathentry, CurrentBrowser->CurrentPath.parent_path());
          break;
       }
    }
@@ -107,11 +107,11 @@ bool MainWindow::on_key_press(GdkEventKey* event)
 }
 
 void MainWindow::on_returnbtn_clicked() {
-   bridge::wChangeDir(CurrentBrowser, &m_Pathentry, CurrentBrowser->CurrentPath.parent_path());
+   bridge::wChangeDir(this, CurrentBrowser, &m_Pathentry, CurrentBrowser->CurrentPath.parent_path());
 }
 
 void MainWindow::on_pathentry_activate() {
-   bridge::wChangeDir(CurrentBrowser, &m_Pathentry, fs::path(m_Pathentry.get_text()));
+   bridge::wChangeDir(this, CurrentBrowser, &m_Pathentry, fs::path(m_Pathentry.get_text()));
 }
 
 int main(int argc, char *argv[])

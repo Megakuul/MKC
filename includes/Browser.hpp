@@ -8,7 +8,7 @@
 class Browser : public Gtk::TreeView {
 
 public:
-  Browser(std::string basePath);
+  Browser(Gtk::Window *Parent, std::string basePath, Browser *&currentBrowser, Gtk::Entry *pathEntry);
   std::filesystem::path CurrentPath; 
 
   void AddElement(const std::string name,
@@ -43,13 +43,9 @@ public:
 private:
   Glib::RefPtr<Gtk::ListStore> m_listStore;
   ModelColumns m_columns;
+
   template<typename T>
   void on_header_clicked(Gtk::TreeModelColumn<T>* column);
-  void on_type_header_clicked();
-  void on_hardlinks_header_clicked();
-  void on_size_header_clicked();
-  void on_access_header_clicked();
-  void on_lastEdited_header_clicked();
 
   void on_row_activated();
 };

@@ -1,19 +1,43 @@
 #include <gtkmm.h>
 #include <Browser.hpp>
+#include <bridge.hpp>
 #include <string>
 #include <iostream>
 #include <ctime>
 #include <iomanip>
 #include <sstream>
+#include <filesystem>
 
 using namespace std;
+namespace fs = filesystem;
 
-Browser::Browser(string basePath) : CurrentPath(basePath) {
-  set_name("Filebrowser");
-
+Browser::Browser(Gtk::Window *Parent, string basePath, Browser *&currentBrowser, Gtk::Entry *pathEntry) : 
+    CurrentPath(basePath)  {
+  
   m_listStore = Gtk::ListStore::create(m_columns);
-
+  set_name("filebrowser");
+  set_opacity(0.6);
   set_model(m_listStore);
+  // This function changes the Browser UI on focus
+  signal_focus_in_event().connect([this, &currentBrowser, pathEntry](GdkEventFocus* event) {
+    currentBrowser->set_opacity(0.6);
+    currentBrowser = this;
+    currentBrowser->set_opacity(1);
+    pathEntry->set_text(CurrentPath.c_str());
+    return false;
+  });
+  // This function is handling the entering of directorys and files
+  signal_row_activated().connect([this, pathEntry, Parent](const Gtk::TreeModel::Path& path, Gtk::TreeViewColumn* column) {
+    auto iter = get_model()->get_iter(path);
+
+    string name = iter->get_value(m_columns.name);
+    string type = iter->get_value(m_columns.type);
+    if (type == "d") {
+      fs::path new_path = CurrentPath;
+      bridge::wChangeDir(Parent, this, pathEntry, new_path.append(name));
+    }
+    // TODO: If the value is a file, open it with a text editor
+  });
 
   // Name of the element
   auto* nameRenderer = Gtk::manage(new Gtk::CellRendererText());
