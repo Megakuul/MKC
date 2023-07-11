@@ -8,4 +8,4 @@ cmake ..
 
 make
 
-./xmdr
+./mkc

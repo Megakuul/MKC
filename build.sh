@@ -9,4 +9,4 @@ cmake ..
 
 make
 
-cp xmdr ../xmdr/usr/bin/
+cp mkc ../mkc/usr/bin/

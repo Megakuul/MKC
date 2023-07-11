@@ -25,6 +25,11 @@ Browser::Browser(string basePath) : CurrentPath(basePath) {
   nameRenderer->set_padding(3,3);
   name->set_expand(true);
   name->set_max_width(500);
+  name->set_clickable(true);
+  name->signal_clicked().connect([this] {
+    on_header_clicked(&m_columns.name);
+  });
+    
   append_column(*name);
 
   // Type of the element (f/d)
@@ -37,6 +42,10 @@ Browser::Browser(string basePath) : CurrentPath(basePath) {
   typeRenderer->set_alignment(0.5, 0.5);
   typeRenderer->set_padding(3,3);
   type->set_max_width(50);
+  type->set_clickable(true);
+  type->signal_clicked().connect([this] {
+    on_header_clicked(&m_columns.type);
+  });
   append_column(*type);
 
   // Hardlinks of the element
@@ -49,6 +58,10 @@ Browser::Browser(string basePath) : CurrentPath(basePath) {
   hardLinksRenderer->set_alignment(0.5, 0.5);
   hardLinksRenderer->set_padding(3,3);
   hardLinks->set_max_width(50);
+  hardLinks->set_clickable(true);
+  hardLinks->signal_clicked().connect([this] {
+    on_header_clicked(&m_columns.hardlinks);
+  });
   append_column(*hardLinks);
 
   // Size of the element
@@ -60,6 +73,7 @@ Browser::Browser(string basePath) : CurrentPath(basePath) {
   size->add_attribute(sizeRenderer->property_text(), m_columns.size);
   sizeRenderer->set_padding(3,3);
   size->set_max_width(100);
+  size->set_clickable(true);
   // This Custom Cell renderer along the Lambda function for the cell is there to convert the size to according standard
   // The set_cell_data_func is always executed if a cell needs to rerender
   size->set_cell_data_func(*sizeRenderer,[this](Gtk::CellRenderer* renderer, const Gtk::TreeModel::iterator& iter) {
@@ -88,6 +102,9 @@ Browser::Browser(string basePath) : CurrentPath(basePath) {
     ss << fixed << setprecision(2) << shorten_num << suffix;
     dynamic_cast<Gtk::CellRendererText*>(renderer)->property_text() = ss.str();
   });
+  size->signal_clicked().connect([this] {
+    on_header_clicked(&m_columns.size);
+  });
   append_column(*size);
 
   // Accessrights of the element
@@ -100,6 +117,10 @@ Browser::Browser(string basePath) : CurrentPath(basePath) {
   accessRenderer->set_alignment(0.5, 0.5);
   accessRenderer->set_padding(3,3);
   access->set_max_width(100);
+  access->set_clickable(true);
+  access->signal_clicked().connect([this] {
+    on_header_clicked(&m_columns.access);
+  });
   append_column(*access);
 
   // LastModified attribute of the element
@@ -111,6 +132,7 @@ Browser::Browser(string basePath) : CurrentPath(basePath) {
   lastEdited->add_attribute(lastEditedRenderer->property_text(), m_columns.lastEdited);
   lastEdited->set_max_width(150);
   lastEditedRenderer->set_padding(3,3);
+  lastEdited->set_clickable(true);
   // This Custom Cell renderer along the Lambda function for the cell is there to set the date to a local format
   // The set_cell_data_func is always executed if a cell needs to rerender
   lastEdited->set_cell_data_func(*lastEditedRenderer,[this](Gtk::CellRenderer* renderer, const Gtk::TreeModel::iterator& iter) {
@@ -123,14 +145,18 @@ Browser::Browser(string basePath) : CurrentPath(basePath) {
 
     dynamic_cast<Gtk::CellRendererText*>(renderer)->property_text() = ss.str();
   });
+  lastEdited->signal_clicked().connect([this] {
+    on_header_clicked(&m_columns.lastEdited);
+  });
   append_column(*lastEdited);
 
+  // By default sort it by last edited
   m_listStore->set_sort_column(m_columns.lastEdited, Gtk::SORT_ASCENDING);
 }
 
 void Browser::AddElement(const string name,
                          const string type,
-                         const string hardlinks,
+                         const int hardlinks,
                          const int size,
                          const string access, 
                          const time_t lastEdited) {
@@ -160,4 +186,16 @@ void Browser::RemoveElement(const string& name) {
 
 void Browser::ClearElements() {
   m_listStore->clear();
+}
+
+template<typename T>
+void Browser::on_header_clicked(Gtk::TreeModelColumn<T>* column) {
+  Gtk::SortType curSortType;
+  int curSortColId;
+  m_listStore->get_sort_column_id(curSortColId, curSortType);
+  if (curSortType != Gtk::SORT_ASCENDING) {
+    m_listStore->set_sort_column(*column, Gtk::SORT_ASCENDING);
+  } else {
+    m_listStore->set_sort_column(*column, Gtk::SORT_DESCENDING);
+  }
 }

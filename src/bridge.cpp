@@ -16,19 +16,20 @@ int perm_to_int(fs::perms p);
 time_t get_time_from_filetime(const fs::file_time_type filetime);
 
 namespace bridge {
-  void wChangeBrowser(Gtk::Window* mainWindow, Gtk::Entry *Pathentry, Browser*& currentBrowser, Browser* newBrowser) {
+  void wChangeBrowser(Gtk::Window* mainWindow, Gtk::Entry *pathentry, Browser*& currentBrowser, Browser* newBrowser) {
     currentBrowser = newBrowser;
 
-    Pathentry->set_text(currentBrowser->CurrentPath);
+    pathentry->set_text(currentBrowser->CurrentPath.c_str());
     mainWindow->set_focus(*currentBrowser);
   }
 
-  void wChangeDir(Browser* browser, string directory) {
+  void wChangeDir(Browser* browser, Gtk::Entry *pathentry, fs::path directory) {
     try {
-      auto new_contents = fsutil::GetDirectoryContent(directory);
+      auto new_contents = fs::directory_iterator(directory);
 
       browser->ClearElements();
       browser->CurrentPath = directory;
+      pathentry->set_text(browser->CurrentPath.c_str());
       
       for (const auto& entry : new_contents) {
         const auto& status = fs::status(entry);
@@ -37,7 +38,7 @@ namespace bridge {
           browser->AddElement(
             entry.path().filename(),
             "f",
-            to_string(fs::hard_link_count(entry)),
+            fs::hard_link_count(entry),
             fs::file_size(entry),
             to_string(perm_to_int(status.permissions())),
             get_time_from_filetime(fs::last_write_time(entry))
@@ -46,7 +47,7 @@ namespace bridge {
           browser->AddElement(
             entry.path().filename(),
             "d",
-            to_string(fs::hard_link_count(entry)),
+            fs::hard_link_count(entry),
             0,
             to_string(perm_to_int(status.permissions())),
             get_time_from_filetime(fs::last_write_time(entry))

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.17)
 
 set(CMAKE_CXX_STANDARD 23)
 
-project(xmdr)
+project(mkc)
 file(GLOB_RECURSE SOURCE "src/*.cpp")
 
 find_package(PkgConfig REQUIRED)
