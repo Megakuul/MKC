@@ -8,6 +8,7 @@
 #include <string>
 #include <iostream>
 #include <filesystem>
+#include <future>
 
 using namespace std;
 namespace fs = filesystem;
@@ -55,6 +56,24 @@ namespace bridge {
           cout << "Failed to read: " << entry.path() << endl;
         }
       }
+
+      // Initialize Filewatcher
+      fsutil::DeallocateWatcher(browser->watcher_state, browser->watcher_mutex, browser->watcher_cv);
+      // Initialize Filewatcher
+      async(launch::async, [directory, browser] {
+        fsutil::InitWatcher(directory, browser->watcher_state, browser->watcher_mutex, browser->watcher_cv,
+          [](string filename){
+
+          }, [](string filename){
+
+          }, [](string filename){
+
+          }, [](string filename){
+
+          }
+        );
+      });
+
     } catch (const fs::filesystem_error error) {
       Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
       dial.set_secondary_text(error.what());

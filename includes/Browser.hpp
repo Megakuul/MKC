@@ -4,13 +4,48 @@
 #include <gtkmm.h>
 #include <string>
 #include <filesystem>
+#include <atomic>
+#include <mutex>
+#include <condition_variable>
 
 class Browser : public Gtk::TreeView {
 
 public:
   Browser(Gtk::Window *Parent, std::string basePath, Browser *&currentBrowser, Gtk::Entry *pathEntry);
+
+  /**
+   * Current state of the filewatcher
+   * 
+   * 
+   * One of the variables to handle the Watcher State
+   * 
+   * 
+   * If the watcher_state is false it means that the watcher is running,
+   * true will stop the watcher.
+  */
+  atomic<bool> watcher_state;
+  /**
+   * Mutex for the state of the current state of the filewatcher
+   * 
+   * 
+   * One of the variables to handle the Watcher State
+  */
+  mutex watcher_mutex;
+  /**
+   * Conditional variable to check when the current state of the filewatcher got changed
+   * 
+   * 
+   * One of the variables to handle the Watcher State
+  */
+  condition_variable watcher_cv;
+  /**
+   * Current Path of the Filebrowser
+  */
   std::filesystem::path CurrentPath; 
 
+  /**
+   * Adds an element to the Browser
+  */
   void AddElement(const std::string name,
                   const std::string type,
                   const int hardlinks, 
@@ -18,10 +53,17 @@ public:
                   const std::string access, 
                   const std::time_t lastEdited);
 
-  void RemoveElement(const std::string& id);
+  /**
+   * Removes an element to the Browser
+  */
+  void RemoveElement(const std::string& name);
 
+  /**
+   * Clears all the elements from the Browser
+  */
   void ClearElements();
 
+private:
   class ModelColumns : public Gtk::TreeModel::ColumnRecord {
   public:
     ModelColumns() {
@@ -40,13 +82,26 @@ public:
     Gtk::TreeModelColumn<std::time_t> lastEdited;
   };
 
-private:
+  /**
+   * RefPtr to the ListStore
+  */
   Glib::RefPtr<Gtk::ListStore> m_listStore;
+  /**
+   * ModelColumns (like a blueprint or template for the columns)
+  */
   ModelColumns m_columns;
 
+  /**
+   * Function that is executed when a header of a column is clicked
+   * 
+   * @param column Pointer to the column that got clicked
+  */
   template<typename T>
   void on_header_clicked(Gtk::TreeModelColumn<T>* column);
 
+  /**
+   * Function that is executed when a row is activated (double click or enter)
+  */
   void on_row_activated();
 };
 
