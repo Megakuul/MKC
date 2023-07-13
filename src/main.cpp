@@ -22,7 +22,7 @@ MainWindow::MainWindow() : m_MainBox(Gtk::ORIENTATION_VERTICAL),
                            CurrentBrowser(&m_Browser_1) {
 
    set_title("Megakuul Commander");
-   set_name("mainwindow");
+   override_background_color(Gdk::RGBA("rgba(107, 82, 82, 0.212)"));
    set_border_width(0);
    set_default_size(1000, 800);
 
@@ -116,19 +116,9 @@ void MainWindow::on_pathentry_activate() {
 
 int main(int argc, char *argv[])
 {
-   auto app = Gtk::Application::create(argc, argv, "xmdr.megakuul.ch");
+   auto app = Gtk::Application::create(argc, argv, "mkc.megakuul.ch");
 
    MainWindow window;
-   
-   auto css = Gtk::CssProvider::create();
-   css->load_from_path("../style/style.css");
-   Gtk::StyleContext::add_provider_for_screen(
-      Gdk::Screen::get_default(),
-      css,
-      GTK_STYLE_PROVIDER_PRIORITY_APPLICATION
-   );
 
-
-   //Shows the window and returns when it is closed.
    return app->run(window);
 }

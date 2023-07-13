@@ -23,21 +23,21 @@ public:
    * If the watcher_state is false it means that the watcher is running,
    * true will stop the watcher.
   */
-  atomic<bool> watcher_state;
+  std::atomic<bool> watcher_state{true};
   /**
    * Mutex for the state of the current state of the filewatcher
    * 
    * 
    * One of the variables to handle the Watcher State
   */
-  mutex watcher_mutex;
+  std::mutex watcher_mutex;
   /**
    * Conditional variable to check when the current state of the filewatcher got changed
    * 
    * 
    * One of the variables to handle the Watcher State
   */
-  condition_variable watcher_cv;
+  std::condition_variable watcher_cv;
   /**
    * Current Path of the Filebrowser
   */
@@ -46,12 +46,7 @@ public:
   /**
    * Adds an element to the Browser
   */
-  void AddElement(const std::string name,
-                  const std::string type,
-                  const int hardlinks, 
-                  const int size, 
-                  const std::string access, 
-                  const std::time_t lastEdited);
+  void AddElement(const std::filesystem::path entry);
 
   /**
    * Removes an element to the Browser

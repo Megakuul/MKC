@@ -8,7 +8,7 @@ file(GLOB_RECURSE SOURCE "src/*.cpp")
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTKMM REQUIRED gtkmm-3.0)
 
-include_directories(${GTKMM_INCLUDE_DIRS} includes style)
+include_directories(${GTKMM_INCLUDE_DIRS} includes)
 link_directories(${GTKMM_LIBRARY_DIRS})
 
 add_executable(${PROJECT_NAME} ${SOURCE})

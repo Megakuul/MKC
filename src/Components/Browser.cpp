@@ -1,6 +1,7 @@
 #include <gtkmm.h>
 #include <Browser.hpp>
 #include <bridge.hpp>
+#include <fsutil.hpp>
 #include <string>
 #include <iostream>
 #include <ctime>
@@ -15,7 +16,6 @@ Browser::Browser(Gtk::Window *Parent, string basePath, Browser *&currentBrowser,
     CurrentPath(basePath)  {
   
   m_listStore = Gtk::ListStore::create(m_columns);
-  set_name("filebrowser");
   set_opacity(0.6);
   set_model(m_listStore);
   // This function changes the Browser UI on focus
@@ -47,11 +47,13 @@ Browser::Browser(Gtk::Window *Parent, string basePath, Browser *&currentBrowser,
   ));
   name->add_attribute(nameRenderer->property_text(), m_columns.name);
   nameRenderer->set_padding(3,3);
-  name->set_expand(true);
-  name->set_max_width(500);
   name->set_clickable(true);
   name->signal_clicked().connect([this] {
     on_header_clicked(&m_columns.name);
+  });
+  // Set the max width of the name to 50%;
+  signal_size_allocate().connect([name](const Gtk::Allocation& allocation){
+    name->set_max_width(allocation.get_width() * 0.5);
   });
     
   append_column(*name);
@@ -160,14 +162,14 @@ Browser::Browser(Gtk::Window *Parent, string basePath, Browser *&currentBrowser,
   // This Custom Cell renderer along the Lambda function for the cell is there to set the date to a local format
   // The set_cell_data_func is always executed if a cell needs to rerender
   lastEdited->set_cell_data_func(*lastEditedRenderer,[this](Gtk::CellRenderer* renderer, const Gtk::TreeModel::iterator& iter) {
-    const std::time_t& origin_time = (*iter)[m_columns.lastEdited];
+    const time_t& origin_time = (*iter)[m_columns.lastEdited];
 
-    std::tm* loc_time = std::localtime(&origin_time);
+    tm* loc_time = localtime(&origin_time);
 
-    std::stringstream ss;
-    ss << std::put_time(loc_time, "%H:%M %d-%m-%Y");
+    char buffer[30];
+    strftime(buffer, sizeof(buffer), "%H:%M %d-%m-%Y", loc_time);
 
-    dynamic_cast<Gtk::CellRendererText*>(renderer)->property_text() = ss.str();
+    dynamic_cast<Gtk::CellRendererText*>(renderer)->property_text() = buffer;
   });
   lastEdited->signal_clicked().connect([this] {
     on_header_clicked(&m_columns.lastEdited);
@@ -175,23 +177,20 @@ Browser::Browser(Gtk::Window *Parent, string basePath, Browser *&currentBrowser,
   append_column(*lastEdited);
 
   // By default sort it by last edited
-  m_listStore->set_sort_column(m_columns.lastEdited, Gtk::SORT_ASCENDING);
+  m_listStore->set_sort_column(m_columns.name, Gtk::SORT_ASCENDING);
 }
 
-void Browser::AddElement(const string name,
-                         const string type,
-                         const int hardlinks,
-                         const int size,
-                         const string access, 
-                         const time_t lastEdited) {
+void Browser::AddElement(const fs::path location) {
+  fsutil::File file_buf = fsutil::GetFileInformation(location.c_str());
 
   auto row = *(m_listStore->append());
-  row[m_columns.name] = name;
-  row[m_columns.type] = type;
-  row[m_columns.hardlinks] = hardlinks;
-  row[m_columns.size] = size;
-  row[m_columns.access] = access;
-  row[m_columns.lastEdited] = lastEdited;
+
+  row[m_columns.name] = file_buf.name;
+  row[m_columns.type] = file_buf.type;
+  row[m_columns.hardlinks] = file_buf.hardlink;
+  row[m_columns.size] = file_buf.size;
+  row[m_columns.access] = file_buf.access;
+  row[m_columns.lastEdited] = file_buf.lastEdited;
 }
 
 void Browser::RemoveElement(const string& name) {

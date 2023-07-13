@@ -8,13 +8,10 @@
 #include <string>
 #include <iostream>
 #include <filesystem>
-#include <future>
+#include <thread>
 
 using namespace std;
 namespace fs = filesystem;
-
-int perm_to_int(fs::perms p);
-time_t get_time_from_filetime(const fs::file_time_type filetime);
 
 namespace bridge {
 
@@ -31,49 +28,42 @@ namespace bridge {
       pathentry->set_text(browser->CurrentPath.c_str());
       
       for (const auto& entry : new_contents) {
-        const auto& status = fs::status(entry);
-
-        if (fs::is_regular_file(status)) {
-          browser->AddElement(
-            entry.path().filename(),
-            "f",
-            fs::hard_link_count(entry),
-            fs::file_size(entry),
-            to_string(perm_to_int(status.permissions())),
-            get_time_from_filetime(fs::last_write_time(entry))
-          );
-        } else if (fs::is_directory(entry)) {
-          browser->AddElement(
-            entry.path().filename(),
-            "d",
-            fs::hard_link_count(entry),
-            0,
-            to_string(perm_to_int(status.permissions())),
-            get_time_from_filetime(fs::last_write_time(entry))
-          );
-        } else {
-          // TODO: Add the element but as invalid element or something
-          cout << "Failed to read: " << entry.path() << endl;
-        }
+        browser->AddElement(entry);
       }
 
       // Initialize Filewatcher
       fsutil::DeallocateWatcher(browser->watcher_state, browser->watcher_mutex, browser->watcher_cv);
       // Initialize Filewatcher
-      async(launch::async, [directory, browser] {
+      thread t([directory, browser] {
         fsutil::InitWatcher(directory, browser->watcher_state, browser->watcher_mutex, browser->watcher_cv,
-          [](string filename){
-
-          }, [](string filename){
-
-          }, [](string filename){
-
-          }, [](string filename){
-
+          [browser](string filename){
+            // On create
+            fs::path cur_path = browser->CurrentPath;
+            cur_path.append(filename);
+            Glib::signal_idle().connect_once([browser, cur_path] {
+              browser->AddElement(cur_path);
+            });
+          }, [browser](string filename){
+            // on delete
+            Glib::signal_idle().connect_once([browser, filename] {
+              browser->RemoveElement(filename);
+            });
+          }, [browser](string filename){
+            // on moved away
+            Glib::signal_idle().connect_once([browser, filename] {
+              browser->RemoveElement(filename);
+            });
+          }, [browser](string filename){
+            // on moved in
+            fs::path cur_path = browser->CurrentPath;
+            cur_path.append(filename);
+            Glib::signal_idle().connect_once([browser, cur_path] {
+              browser->AddElement(cur_path);
+            });
           }
         );
       });
-
+      t.detach();
     } catch (const fs::filesystem_error error) {
       Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
       dial.set_secondary_text(error.what());
@@ -126,33 +116,4 @@ namespace bridge {
       dial.run();
     }
   }
-}
-
-int perm_to_int(fs::perms p) {
-  int res = 0;
-  // Get Owner access
-  res += ((p & fs::perms::owner_read) != fs::perms::none)   ? 400 : 0;
-  res += ((p & fs::perms::owner_write) != fs::perms::none)  ? 200 : 0;
-  res += ((p & fs::perms::owner_exec) != fs::perms::none)   ? 100 : 0;
-  // Get Group access
-  res += ((p & fs::perms::group_read) != fs::perms::none)   ? 040 : 0;
-  res += ((p & fs::perms::group_write) != fs::perms::none)  ? 020 : 0;
-  res += ((p & fs::perms::group_exec) != fs::perms::none)   ? 010 : 0;
-  // Get Others access
-  res += ((p & fs::perms::others_read) != fs::perms::none)  ? 004 : 0;
-  res += ((p & fs::perms::others_write) != fs::perms::none) ? 002 : 0;
-  res += ((p & fs::perms::others_exec) != fs::perms::none)  ? 001 : 0;
-  
-  return res;
-}
-
-time_t get_time_from_filetime(const fs::file_time_type filetime) {
-// This only works with C++ 20
-#ifdef __GNUC__
-  return chrono::system_clock::to_time_t(chrono::file_clock::to_sys(filetime));
-#else
-  return chrono::system_clock::to_time_t(
-    chrono::file_clock::to_sys(chrono::file_clock::to_utc(filetime))
-  );
-#endif
 }
