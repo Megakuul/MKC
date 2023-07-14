@@ -4,6 +4,7 @@
 #include <iostream>
 #include <filesystem>
 #include <sys/inotify.h>
+#include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <functional>
@@ -30,36 +31,83 @@ namespace fsutil {
     std::cout<<fs::absolute(dPath)<<endl;
   }
 
-  File GetFileInformation(std::string location) {
-    File file_buf{};
+  void GetFilesFromDirectory(const string &location, vector<File> &files) {
+    DIR* dir = opendir(location.c_str());
+    if (dir == nullptr) {
+      throw runtime_error("Failed to read content: [" + location + "]");
+    }
+
+    struct dirent* entry;
+    while ((entry = readdir(dir)) != nullptr) {
+      struct File file_buf;
+
+      struct stat stat_buf;
+      fs::path path_buf(location);
+      path_buf.append(entry->d_name);
+      int res = stat(path_buf.c_str(), &stat_buf);
+      if (res != 0) {
+        files.push_back({
+          entry->d_name,"e",0,0,"",0
+        });
+        break;
+      }
+
+      file_buf.name = entry->d_name;
+
+      if (S_ISREG(stat_buf.st_mode))
+        file_buf.type = "f";
+      else if (S_ISDIR(stat_buf.st_mode))
+        file_buf.type = "d";
+      else if (S_ISLNK(stat_buf.st_mode))
+        file_buf.type = "s";
+      else
+        file_buf.type = "o";
+      
+      file_buf.hardlink = stat_buf.st_nlink;
+      file_buf.size = stat_buf.st_size;
+      {
+        int user = (stat_buf.st_mode & S_IRWXU) >> 6;
+        int group = (stat_buf.st_mode & S_IRWXG) >> 3;
+        int other = stat_buf.st_mode & S_IRWXO;
+        file_buf.access = to_string(user * 100 + group * 10 + other);
+      }
+      file_buf.lastEdited = stat_buf.st_mtime;
+
+      files.push_back(file_buf);
+    }
+  }
+
+  void GetFileInformation(const string &location, File &file) {
     fs::path path_buf(location);
     struct stat stat_buf;
     int res = stat(location.c_str(), &stat_buf);
     if (res != 0) {
-      throw fs::filesystem_error("Failed to fetch stats", path_buf, make_error_code(errc::io_error));
+      file = {
+        path_buf.filename().c_str(), "e", 0, 0, "", 0
+      };
+      return; 
     }
+    
+    file.name = path_buf.filename().c_str();
 
     if (S_ISREG(stat_buf.st_mode))
-      file_buf.type = "f";
+      file.type = "f";
     else if (S_ISDIR(stat_buf.st_mode))
-      file_buf.type = "d";
+      file.type = "d";
     else if (S_ISLNK(stat_buf.st_mode))
-      file_buf.type = "s";
+      file.type = "s";
     else
-      file_buf.type = "o";
-
-    file_buf.name = path_buf.filename().c_str();
-    file_buf.hardlink = stat_buf.st_nlink;
-    file_buf.size = stat_buf.st_size;
+      file.type = "o";
+      
+    file.hardlink = stat_buf.st_nlink;
+    file.size = stat_buf.st_size;
     {
       int user = (stat_buf.st_mode & S_IRWXU) >> 6;
       int group = (stat_buf.st_mode & S_IRWXG) >> 3;
       int other = stat_buf.st_mode & S_IRWXO;
-      file_buf.access = to_string(user * 100 + group * 10 + other);
+      file.access = to_string(user * 100 + group * 10 + other);
     }
-    file_buf.lastEdited = stat_buf.st_mtime;
-
-    return file_buf;
+    file.lastEdited = stat_buf.st_mtime;
   }
 
   void DeallocateWatcher(atomic<bool> &state, mutex &state_mutex, condition_variable &state_cv) {
@@ -86,8 +134,8 @@ namespace fsutil {
                    condition_variable &state_cv,
                    function<void(string)> on_create,
                    function<void(string)> on_delete,
-                   function<void(string)> on_moved_away,
-                   function<void(string)> on_moved_in
+                   function<void(string)> on_moved_in,
+                   function<void(string)> on_moved_away
                   ) {
     int length, i = 0;
     int filedescriptor;
@@ -120,9 +168,9 @@ namespace fsutil {
             else if (event->mask & IN_DELETE)
               on_delete(event->name);
             else if (event->mask & IN_MOVED_FROM)
-              on_moved_in(event->name);
-            else if (event->mask & IN_MOVED_TO)
               on_moved_away(event->name);
+            else if (event->mask & IN_MOVED_TO)
+              on_moved_in(event->name);
           }
           i += sizeof(struct inotify_event) + event->len;
         }

@@ -9,6 +9,7 @@
 #include <iostream>
 #include <filesystem>
 #include <thread>
+#include <vector>
 
 using namespace std;
 namespace fs = filesystem;
@@ -21,15 +22,18 @@ namespace bridge {
 
   void wChangeDir(Gtk::Window* Parent, Browser* browser, Gtk::Entry *pathentry, fs::path directory) {
     try {
-      auto new_contents = fs::directory_iterator(directory);
+      vector<fsutil::File> new_content;
+      fsutil::GetFilesFromDirectory(directory.c_str(), new_content);
 
       browser->ClearElements();
       browser->CurrentPath = directory;
       pathentry->set_text(browser->CurrentPath.c_str());
-      
-      for (const auto& entry : new_contents) {
-        browser->AddElement(entry);
+
+      browser->m_listStore->set_sort_column(Gtk::TreeSortable::DEFAULT_UNSORTED_COLUMN_ID, Gtk::SORT_ASCENDING);
+      for (const fsutil::File& file : new_content) {
+        browser->AddElement(file);
       }
+      browser->m_listStore->set_sort_column(browser->m_columns.name, Gtk::SORT_ASCENDING);
 
       // Initialize Filewatcher
       fsutil::DeallocateWatcher(browser->watcher_state, browser->watcher_mutex, browser->watcher_cv);
@@ -40,8 +44,10 @@ namespace bridge {
             // On create
             fs::path cur_path = browser->CurrentPath;
             cur_path.append(filename);
-            Glib::signal_idle().connect_once([browser, cur_path] {
-              browser->AddElement(cur_path);
+            fsutil::File file;
+            fsutil::GetFileInformation(cur_path.c_str(), file);
+            Glib::signal_idle().connect_once([browser, file] {
+              browser->AddElement(file);
             });
           }, [browser](string filename){
             // on delete
@@ -49,22 +55,24 @@ namespace bridge {
               browser->RemoveElement(filename);
             });
           }, [browser](string filename){
-            // on moved away
-            Glib::signal_idle().connect_once([browser, filename] {
-              browser->RemoveElement(filename);
-            });
-          }, [browser](string filename){
             // on moved in
             fs::path cur_path = browser->CurrentPath;
             cur_path.append(filename);
-            Glib::signal_idle().connect_once([browser, cur_path] {
-              browser->AddElement(cur_path);
+            fsutil::File file;
+            fsutil::GetFileInformation(cur_path.c_str(), file);
+            Glib::signal_idle().connect_once([browser, file] {
+              browser->AddElement(file);
+            });
+          }, [browser](string filename){
+            // on moved away
+            Glib::signal_idle().connect_once([browser, filename] {
+              browser->RemoveElement(filename);
             });
           }
         );
       });
       t.detach();
-    } catch (const fs::filesystem_error error) {
+    } catch (const runtime_error error) {
       Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
       dial.set_secondary_text(error.what());
       dial.run();

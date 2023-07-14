@@ -175,22 +175,17 @@ Browser::Browser(Gtk::Window *Parent, string basePath, Browser *&currentBrowser,
     on_header_clicked(&m_columns.lastEdited);
   });
   append_column(*lastEdited);
-
-  // By default sort it by last edited
-  m_listStore->set_sort_column(m_columns.name, Gtk::SORT_ASCENDING);
 }
 
-void Browser::AddElement(const fs::path location) {
-  fsutil::File file_buf = fsutil::GetFileInformation(location.c_str());
-
+void Browser::AddElement(const fsutil::File &file) {
   auto row = *(m_listStore->append());
 
-  row[m_columns.name] = file_buf.name;
-  row[m_columns.type] = file_buf.type;
-  row[m_columns.hardlinks] = file_buf.hardlink;
-  row[m_columns.size] = file_buf.size;
-  row[m_columns.access] = file_buf.access;
-  row[m_columns.lastEdited] = file_buf.lastEdited;
+  row[m_columns.name] = file.name;
+  row[m_columns.type] = file.type;
+  row[m_columns.hardlinks] = file.hardlink;
+  row[m_columns.size] = file.size;
+  row[m_columns.access] = file.access;
+  row[m_columns.lastEdited] = file.lastEdited;
 }
 
 void Browser::RemoveElement(const string& name) {

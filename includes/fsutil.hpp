@@ -43,6 +43,9 @@ namespace fsutil {
   */
   void AddDir(std::string directory, std::string name);
 
+  
+  void GetFilesFromDirectory(const std::string &location, std::vector<File> &files);
+
   /**
    * Constructs a File struct out of a file
    * 
@@ -51,7 +54,7 @@ namespace fsutil {
    * it is only working on Linux
    * @param location Path of the file
   */
-  File GetFileInformation(std::string location);
+  void GetFileInformation(const std::string &location, File &file);
 
   /**
    * Initializes a Filewatcher
@@ -79,8 +82,8 @@ namespace fsutil {
                    std::condition_variable &state_cv,
                    std::function<void(std::string)> on_create,
                    std::function<void(std::string)> on_delete,
-                   std::function<void(std::string)> on_moved_away,
-                   std::function<void(std::string)> on_moved_in);
+                   std::function<void(std::string)> on_moved_in,
+                   std::function<void(std::string)> on_moved_away);
   
   /**
    * Deallocates all Filewatchers that are associated with the state

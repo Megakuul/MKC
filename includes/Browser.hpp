@@ -4,6 +4,7 @@
 #include <gtkmm.h>
 #include <string>
 #include <filesystem>
+#include <fsutil.hpp>
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
@@ -41,24 +42,8 @@ public:
   /**
    * Current Path of the Filebrowser
   */
-  std::filesystem::path CurrentPath; 
+  std::filesystem::path CurrentPath;
 
-  /**
-   * Adds an element to the Browser
-  */
-  void AddElement(const std::filesystem::path entry);
-
-  /**
-   * Removes an element to the Browser
-  */
-  void RemoveElement(const std::string& name);
-
-  /**
-   * Clears all the elements from the Browser
-  */
-  void ClearElements();
-
-private:
   class ModelColumns : public Gtk::TreeModel::ColumnRecord {
   public:
     ModelColumns() {
@@ -81,11 +66,28 @@ private:
    * RefPtr to the ListStore
   */
   Glib::RefPtr<Gtk::ListStore> m_listStore;
+
   /**
    * ModelColumns (like a blueprint or template for the columns)
   */
   ModelColumns m_columns;
 
+  /**
+   * Adds an element to the Browser
+  */
+  void AddElement(const fsutil::File &file);
+
+  /**
+   * Removes an element to the Browser
+  */
+  void RemoveElement(const std::string& name);
+
+  /**
+   * Clears all the elements from the Browser
+  */
+  void ClearElements();
+
+private:
   /**
    * Function that is executed when a header of a column is clicked
    * 
