@@ -87,6 +87,11 @@ public:
   */
   void ClearElements();
 
+  /**
+   * Gets the Names of the selected elements
+  */
+  std::vector<std::string> GetSelectedNames();
+
 private:
   /**
    * Function that is executed when a header of a column is clicked

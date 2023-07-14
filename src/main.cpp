@@ -10,7 +10,7 @@ using namespace std;
 namespace fs = filesystem;
 
 MainWindow::MainWindow() : m_MainBox(Gtk::ORIENTATION_VERTICAL),
-                           m_Toolbar(this),
+                           m_Toolbar(this, CurrentBrowser),
                            m_PathentryBox(Gtk::ORIENTATION_HORIZONTAL),
                            m_Returnbtn(),
                            m_Pathentry(),

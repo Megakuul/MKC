@@ -43,6 +43,13 @@ namespace fsutil {
   */
   void AddDir(std::string directory, std::string name);
 
+  /**
+   * Recursively deletes every file or directory in the names vector contained in the directory path
+   * @param directory Directory Path
+   * @param names Names of the Objects
+  */
+  void DeleteObjects(std::string directory, std::vector<std::string> names);
+
   
   void GetFilesFromDirectory(const std::string &location, std::vector<File> &files);
 

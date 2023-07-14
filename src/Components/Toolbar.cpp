@@ -2,12 +2,11 @@
 #include <Toolbar.hpp>
 #include <Modal.hpp>
 #include <bridge.hpp>
-#include <iostream>
-#include <string>
+#include <Browser.hpp>
 
 using namespace std;
 
-Toolbar::Toolbar(Gtk::Window *Parent) : AFileBtn(), ADirBtn(), ToggleBtn() {
+Toolbar::Toolbar(Gtk::Window *Parent, Browser *CurrentBrowser) : AFileBtn(), ADirBtn(), DObjBtn() {
     set_name("toolbar");
     
     AFileBtn.set_stock_id(Gtk::Stock::FILE);
@@ -15,28 +14,23 @@ Toolbar::Toolbar(Gtk::Window *Parent) : AFileBtn(), ADirBtn(), ToggleBtn() {
 
     ADirBtn.set_stock_id(Gtk::Stock::DIRECTORY);
     ADirBtn.set_tooltip_text("CTRL + 2");
+
+    DObjBtn.set_stock_id(Gtk::Stock::DELETE);
+    DObjBtn.set_tooltip_text("CTRL + 3");
     
     add(AFileBtn);
     add(ADirBtn);
+    add(DObjBtn);
 
-    AFileBtn.signal_clicked().connect(
-        sigc::bind(sigc::mem_fun(*this, &Toolbar::AFileBtn_clicked),
-        Parent
-    ));
-    ADirBtn.signal_clicked().connect(
-        sigc::bind(sigc::mem_fun(*this, &Toolbar::ADirBtn_clicked),
-        Parent
-    ));
-}
+    AFileBtn.signal_clicked().connect([Parent,CurrentBrowser] {
+        bridge::wAddFile(Parent, CurrentBrowser->CurrentPath);
+    });
+    ADirBtn.signal_clicked().connect([Parent,CurrentBrowser] {
+        bridge::wAddDir(Parent, CurrentBrowser->CurrentPath);
+    });
+    DObjBtn.signal_clicked().connect([Parent,CurrentBrowser] {
+        Glib::RefPtr<Gtk::TreeSelection> elements = CurrentBrowser->get_selection();
 
-void Toolbar::AFileBtn_clicked(Gtk::Window *Parent) {
-    bridge::wAddFile(Parent, "/");
-}
-
-void Toolbar::ADirBtn_clicked(Gtk::Window *Parent) {
-    bridge::wAddDir(Parent, "/");
-}
-
-Toolbar::~Toolbar() {
-
+        bridge::wDeleteObjects(Parent, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
+    });
 }

@@ -2,6 +2,7 @@
 
 #include <fsutil.hpp>
 #include <iostream>
+#include <fstream>
 #include <filesystem>
 #include <sys/inotify.h>
 #include <dirent.h>
@@ -17,18 +18,27 @@ namespace fs = filesystem;
 
 namespace fsutil {
   void AddFile(string directory, string name) {
-    fs::path fPath = directory;
-    fPath.append(name);
+    fs::path path_buf = directory;
+    path_buf.append(name);
 
-    std::cout<<fs::absolute(fPath)<<endl;
+    ofstream(path_buf.c_str());
   }
 
   void AddDir(string directory, string name) {
-    fs::path dPath = directory;
-    dPath.append(name);
+    fs::path path_buf = directory;
+    path_buf.append(name);
 
-
-    std::cout<<fs::absolute(dPath)<<endl;
+    fs::create_directories(path_buf);
+  }
+  
+  void DeleteObjects(string directory, vector<string> names) {
+    for (const string &name : names) {
+      // Could be optimized by scoping the path_buf out of the loop.
+      // But this would require all names to be only one layer below the directory
+      fs::path path_buf(directory);
+      path_buf.append(name);
+      fs::remove_all(path_buf);
+    }
   }
 
   void GetFilesFromDirectory(const string &location, vector<File> &files) {

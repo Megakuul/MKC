@@ -29,10 +29,12 @@ namespace bridge {
       browser->CurrentPath = directory;
       pathentry->set_text(browser->CurrentPath.c_str());
 
+      // Disable Sorting before adding elements (otherwise the performance of the list suffers)
       browser->m_listStore->set_sort_column(Gtk::TreeSortable::DEFAULT_UNSORTED_COLUMN_ID, Gtk::SORT_ASCENDING);
       for (const fsutil::File& file : new_content) {
         browser->AddElement(file);
       }
+      // Enable Sorting after adding elements
       browser->m_listStore->set_sort_column(browser->m_columns.name, Gtk::SORT_ASCENDING);
 
       // Initialize Filewatcher
@@ -79,22 +81,30 @@ namespace bridge {
     }
   }
 
+  void wDeleteObjects(Gtk::Window* Parent, string location, vector<string> objectnames) {
+    bool answer;
+    Modal mod("Delete selected objects recursively?", Parent, nullptr, &answer);
+
+    try {
+      fsutil::DeleteObjects(location, objectnames);
+    } catch (const fs::filesystem_error error) {
+      Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+      dial.set_secondary_text(error.what());
+      dial.run();
+    }
+  }
+
   void wAddFile(Gtk::Window* Parent, string location) {
     string filename;
 
-    try {
-      Modal mod("Create File", filename, Parent);
-    } catch (const runtime_error error) {
-      // TODO: Implement an error Dialog
-      cout<<error.what()<<endl;
-    }
+    Modal mod("Create File", Parent, &filename);
 
     if (filename.empty() || filename==" ") {
       return;
     }
 
     try {
-      fsutil::AddDir(location, filename);
+      fsutil::AddFile(location, filename);
     } catch (const fs::filesystem_error error) {
       Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
       dial.set_secondary_text(error.what());
@@ -105,12 +115,7 @@ namespace bridge {
   void wAddDir(Gtk::Window* Parent, string location) {
     string dirname;
 
-    try {
-      Modal mod("Create Directory", dirname, Parent);
-    } catch (runtime_error error) {
-      // TODO: Implement an error Dialog
-      cout<<error.what()<<endl;
-    }
+    Modal mod("Create Directory", Parent, &dirname);
 
     if (dirname.empty() || dirname==" ") {
       return;

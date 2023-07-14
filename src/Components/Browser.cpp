@@ -194,12 +194,27 @@ void Browser::RemoveElement(const string& name) {
     Gtk::TreeModel::Row row = *iter;
     auto rowname = row[m_columns.name];
 
-    cout << rowname << endl;
     if (rowname == name) {
       m_listStore->erase(iter);
       break;
     }
   }
+}
+
+vector<string> Browser::GetSelectedNames() {
+  vector<string> names_buf;
+  Glib::RefPtr<Gtk::TreeSelection> selection = this->get_selection();
+
+  for (const auto& path : selection->get_selected_rows()) {
+    Gtk::TreeModel::iterator iter = this->get_model()->get_iter(path);
+    if (iter) {
+      Gtk::TreeModel::Row row = *iter;
+      Glib::ustring ustr = row[m_columns.name];
+      string str(ustr.c_str());
+      names_buf.push_back(str);
+    }
+  }
+  return names_buf;
 }
 
 void Browser::ClearElements() {
