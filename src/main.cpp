@@ -89,6 +89,9 @@ bool MainWindow::on_key_press(GdkEventKey* event)
          case GDK_KEY_2:
             bridge::wAddDir(this, CurrentBrowser->CurrentPath);
          break;
+         case GDK_KEY_3:
+            bridge::wDeleteObjects(this, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
+         break;
          case GDK_KEY_t:
             set_focus(m_Pathentry);
          break;

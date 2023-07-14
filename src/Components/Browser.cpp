@@ -18,6 +18,7 @@ Browser::Browser(Gtk::Window *Parent, string basePath, Browser *&currentBrowser,
   m_listStore = Gtk::ListStore::create(m_columns);
   set_opacity(0.6);
   set_model(m_listStore);
+  get_selection()->set_mode(Gtk::SELECTION_MULTIPLE);
   // This function changes the Browser UI on focus
   signal_focus_in_event().connect([this, &currentBrowser, pathEntry](GdkEventFocus* event) {
     currentBrowser->set_opacity(0.6);

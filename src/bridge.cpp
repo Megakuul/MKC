@@ -82,8 +82,11 @@ namespace bridge {
   }
 
   void wDeleteObjects(Gtk::Window* Parent, string location, vector<string> objectnames) {
-    bool answer;
-    Modal mod("Delete selected objects recursively?", Parent, nullptr, &answer);
+    Gtk::MessageDialog dial(*Parent, "Confirmation", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_OK_CANCEL);
+    dial.set_secondary_text("Delete selected objects recursively?");
+    if (dial.run() != Gtk::RESPONSE_OK) {
+      return;
+    }
 
     try {
       fsutil::DeleteObjects(location, objectnames);

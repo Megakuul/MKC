@@ -29,8 +29,6 @@ Toolbar::Toolbar(Gtk::Window *Parent, Browser *CurrentBrowser) : AFileBtn(), ADi
         bridge::wAddDir(Parent, CurrentBrowser->CurrentPath);
     });
     DObjBtn.signal_clicked().connect([Parent,CurrentBrowser] {
-        Glib::RefPtr<Gtk::TreeSelection> elements = CurrentBrowser->get_selection();
-
         bridge::wDeleteObjects(Parent, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
     });
 }
