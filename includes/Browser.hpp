@@ -105,6 +105,11 @@ private:
    * Function that is executed when a row is activated (double click or enter)
   */
   void on_row_activated();
+
+  /**
+   * Function that is executed when a key is pressed
+  */
+  bool on_key_press(GdkEventKey* event);
 };
 
 #endif

@@ -59,7 +59,7 @@ namespace fsutil {
         files.push_back({
           entry->d_name,"e",0,0,"",0
         });
-        break;
+        continue;
       }
 
       file_buf.name = entry->d_name;

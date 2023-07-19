@@ -132,4 +132,10 @@ namespace bridge {
       dial.run();
     }
   }
+
+  void wHandlePaste(Browser* CurrentBrowser) {
+    auto clipboard = Gtk::Clipboard::get();
+    cout << clipboard->wait_for_text() << endl;
+    cout << CurrentBrowser->CurrentPath << endl;
+  }
 }

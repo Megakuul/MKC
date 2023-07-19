@@ -104,6 +104,9 @@ bool MainWindow::on_key_press(GdkEventKey* event)
          case GDK_KEY_z:
             bridge::wChangeDir(this, CurrentBrowser, &m_Pathentry, CurrentBrowser->CurrentPath.parent_path());
          break;
+         case GDK_KEY_v:
+            bridge::wHandlePaste(CurrentBrowser);
+         break;
       }
    }
    return false;
@@ -122,6 +125,15 @@ int main(int argc, char *argv[])
    auto app = Gtk::Application::create(argc, argv, "mkc.megakuul.ch");
 
    MainWindow window;
+
+   GError *error = NULL;
+   GdkPixbuf *favicon = gdk_pixbuf_new_from_file("/etc/mkc/favicon.png", &error);
+   if (!favicon) {
+      cerr << "Error loading icon: " << error->message << endl;
+      g_error_free(error);
+   } else {
+      gtk_window_set_default_icon(favicon);
+   }
 
    return app->run(window);
 }

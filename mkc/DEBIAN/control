@@ -3,7 +3,7 @@ Version: 1.0
 Section: utils
 Priority: optional
 Architecture: all
-Depends: libgtkmm-3.0-1v5 (>= 3.22)
+Depends: libgtkmm-3.0-1v5 (>= 3.22), libstdc++6 (>= 3.4.31)
 Maintainer: Megakuul megakuul@gmx.ch
 Description: Megakuul Commander
     Simple filebrowser that is meant to speed up productivity
