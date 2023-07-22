@@ -13,7 +13,7 @@ using namespace std;
 namespace fs = filesystem;
 
 Browser::Browser(Gtk::Window *Parent, string basePath, Browser *&currentBrowser, Gtk::Entry *pathEntry) : 
-    CurrentPath(basePath)  {
+    CurrentPath(basePath), m_parent(Parent)  {
   
   m_listStore = Gtk::ListStore::create(m_columns);
   set_opacity(0.6);
@@ -36,8 +36,10 @@ Browser::Browser(Gtk::Window *Parent, string basePath, Browser *&currentBrowser,
     if (type == "d") {
       fs::path new_path = CurrentPath;
       bridge::wChangeDir(Parent, this, pathEntry, new_path.append(name));
+    } else if (type == "f") {
+      string cmd = "xdg-open \"" + (CurrentPath / name).string() + "\"";
+      system(cmd.c_str());
     }
-    // TODO: If the value is a file, open it with a text editor
   });
 
   signal_key_press_event().connect(sigc::mem_fun(
@@ -244,7 +246,7 @@ bool Browser::on_key_press(GdkEventKey* event)
   if (event->state & GDK_CONTROL_MASK) {
     switch (event->keyval) {
       case GDK_KEY_v:
-        bridge::wHandlePaste(this);
+        bridge::wHandlePaste(this->m_parent, this);
       break;
     }
   }

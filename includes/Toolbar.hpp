@@ -6,12 +6,13 @@
 
 class Toolbar : public Gtk::Toolbar {
 public:
-    Toolbar(Gtk::Window *Parent, Browser *CurrentBrowser);
+    Toolbar(Gtk::Window *Parent, Browser*& CurrentBrowser);
 
 protected:
     Gtk::ToolButton AFileBtn;
     Gtk::ToolButton ADirBtn;
     Gtk::ToolButton DObjBtn;
+    Gtk::ToolButton RObjBtn;
 };
 
 #endif

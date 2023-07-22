@@ -70,6 +70,9 @@ MainWindow::MainWindow() : m_MainBox(Gtk::ORIENTATION_VERTICAL),
 
    // Initial Navigate to the first Browser
    bridge::wChangeBrowser(this, &m_Browser_1);
+   // Initial set directories
+   bridge::wChangeDir(this, &m_Browser_1, &m_Pathentry, "/");
+   bridge::wChangeDir(this, &m_Browser_2, &m_Pathentry, fs::path(getenv("HOME")));
 
    signal_key_press_event().connect(sigc::mem_fun(
       *this,
@@ -92,6 +95,9 @@ bool MainWindow::on_key_press(GdkEventKey* event)
          case GDK_KEY_3:
             bridge::wDeleteObjects(this, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
          break;
+         case GDK_KEY_4:
+            bridge::wRestoreObject(this, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
+         break;
          case GDK_KEY_t:
             set_focus(m_Pathentry);
          break;
@@ -103,9 +109,6 @@ bool MainWindow::on_key_press(GdkEventKey* event)
          break;
          case GDK_KEY_z:
             bridge::wChangeDir(this, CurrentBrowser, &m_Pathentry, CurrentBrowser->CurrentPath.parent_path());
-         break;
-         case GDK_KEY_v:
-            bridge::wHandlePaste(CurrentBrowser);
          break;
       }
    }

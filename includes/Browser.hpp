@@ -93,6 +93,7 @@ public:
   std::vector<std::string> GetSelectedNames();
 
 private:
+  Gtk::Window *m_parent;
   /**
    * Function that is executed when a header of a column is clicked
    * 

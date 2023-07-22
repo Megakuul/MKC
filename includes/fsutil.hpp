@@ -30,6 +30,18 @@ namespace fsutil {
   };
 
   /**
+   * Operation to do
+   * ERROR = Function will just throw an error if multiple files conflict
+   * DELETE = Duplicated files are deleted
+   * TRASH = Duplicated files are moved to the trash
+  */
+  enum OP {
+    ERROR = 0,
+    DELETE = 1,
+    TRASH = 2,
+  };
+
+  /**
    * Adds a File to the directory
    * @param directory Directory Path
    * @param name Filename
@@ -44,11 +56,38 @@ namespace fsutil {
   void AddDir(std::string directory, std::string name);
 
   /**
+   * Puts an object into the mkc trash (and compresses it)
+   * @param source Object path
+  */
+  void TrashObject(const std::string source);
+
+  /**
+   * Puts a compressed object back into its original form
+   * @param source Object path
+  */
+  void RecoverObject(const std::string source);
+
+  /**
    * Recursively deletes every file or directory in the names vector contained in the directory path
    * @param directory Directory Path
    * @param names Names of the Objects
   */
-  void DeleteObjects(std::string directory, std::vector<std::string> names);
+  void DeleteObjects(std::string directory, std::vector<std::string> names, OP operation);
+
+  /**
+   * Copies an object
+   * @param source source path
+   * @param destination destination path
+  */
+  void CopyObject(std::string source, std::string destination, OP operation=OP::ERROR);
+
+
+  /**
+   * Moves an object
+   * @param source source path
+   * @param destination destination path
+  */
+  void MoveObject(std::string source, std::string destination, OP operation=OP::ERROR);
 
   
   void GetFilesFromDirectory(const std::string &location, std::vector<File> &files);

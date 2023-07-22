@@ -8,8 +8,12 @@ file(GLOB_RECURSE SOURCE "src/*.cpp")
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTKMM REQUIRED gtkmm-3.0)
 
+find_package(ZLIB REQUIRED)
+
+add_subdirectory(external/uritopath)
+
 include_directories(${GTKMM_INCLUDE_DIRS} includes)
 link_directories(${GTKMM_LIBRARY_DIRS})
 
 add_executable(${PROJECT_NAME} ${SOURCE})
-target_link_libraries(${PROJECT_NAME} ${GTKMM_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${GTKMM_LIBRARIES} ZLIB::ZLIB uritopath)

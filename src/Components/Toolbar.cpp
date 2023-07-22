@@ -4,9 +4,11 @@
 #include <bridge.hpp>
 #include <Browser.hpp>
 
+#include <iostream>
+
 using namespace std;
 
-Toolbar::Toolbar(Gtk::Window *Parent, Browser *CurrentBrowser) : AFileBtn(), ADirBtn(), DObjBtn() {
+Toolbar::Toolbar(Gtk::Window *Parent, Browser *&CurrentBrowser) : AFileBtn(), ADirBtn(), DObjBtn(), RObjBtn() {
     set_name("toolbar");
     
     AFileBtn.set_stock_id(Gtk::Stock::FILE);
@@ -17,18 +19,25 @@ Toolbar::Toolbar(Gtk::Window *Parent, Browser *CurrentBrowser) : AFileBtn(), ADi
 
     DObjBtn.set_stock_id(Gtk::Stock::DELETE);
     DObjBtn.set_tooltip_text("CTRL + 3");
+
+    RObjBtn.set_stock_id(Gtk::Stock::REVERT_TO_SAVED);
+    RObjBtn.set_tooltip_text("CTRL + 4");
     
     add(AFileBtn);
     add(ADirBtn);
     add(DObjBtn);
+    add(RObjBtn);
 
-    AFileBtn.signal_clicked().connect([Parent,CurrentBrowser] {
+    AFileBtn.signal_clicked().connect([Parent,&CurrentBrowser] {
         bridge::wAddFile(Parent, CurrentBrowser->CurrentPath);
     });
-    ADirBtn.signal_clicked().connect([Parent,CurrentBrowser] {
+    ADirBtn.signal_clicked().connect([Parent,&CurrentBrowser] {
         bridge::wAddDir(Parent, CurrentBrowser->CurrentPath);
     });
-    DObjBtn.signal_clicked().connect([Parent,CurrentBrowser] {
+    DObjBtn.signal_clicked().connect([Parent,&CurrentBrowser] {
         bridge::wDeleteObjects(Parent, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
+    });
+    RObjBtn.signal_clicked().connect([Parent,&CurrentBrowser] {
+        bridge::wRestoreObject(Parent, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
     });
 }
