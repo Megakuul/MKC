@@ -1,5 +1,7 @@
 // This File contains wrappers that bridge the direct access to the filesystem (fsutil) and the frontend
 
+#include "gtkmm/radiobutton.h"
+#include "gtkmm/radiobuttongroup.h"
 #include <gtkmm.h>
 #include <bridge.hpp>
 #include <fsutil.hpp>
@@ -88,7 +90,7 @@ namespace bridge {
     Gtk::MessageDialog dial(*Parent, "Confirmation", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_OK_CANCEL);
     dial.set_secondary_text("Delete selected objects recursively?");
 
-    Gtk::CheckButton trashbtn("Move replaced files to trash");
+    Gtk::CheckButton trashbtn("Move files to trash (only reg_files and sym_lnk)");
     dial.get_message_area()->pack_start(trashbtn);
     trashbtn.show();
 
@@ -234,16 +236,34 @@ namespace bridge {
             files.append("\n");
             files.append(get<0>(file).filename());
           }
-          Gtk::MessageDialog dial(*Parent, "Confirmation", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_OK_CANCEL);
+          Gtk::MessageDialog dial(*Parent, "Conflicting Files", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_OK_CANCEL);
 
-          Gtk::CheckButton trashbtn("Move replaced files to trash");
-          dial.get_message_area()->pack_start(trashbtn);
-          trashbtn.show();
+		  Gtk::RadioButtonGroup selGroup;
 
-          dial.set_secondary_text("Overwrite these:\n"+files);
+		  Gtk::RadioButton delbtn("Delete replaced files");
+		  delbtn.set_group(selGroup);
+		  delbtn.set_active();
+		  dial.get_message_area()->pack_start(delbtn);
+		  delbtn.show();
+          Gtk::RadioButton trashbtn("Move replaced files to trash");
+		  trashbtn.set_group(selGroup);
+		  dial.get_message_area()->pack_start(trashbtn);
+		  trashbtn.show();
+		  Gtk::RadioButton renamebtn("Rename replaced files");
+		  renamebtn.set_group(selGroup);
+		  dial.get_message_area()->pack_start(renamebtn);
+		  renamebtn.show();
+
+          dial.set_secondary_text("Overwrite:\n"+files);
 
           if (dial.run() == Gtk::RESPONSE_OK) {
-            const auto operation = trashbtn.get_active() ? fsutil::TRASH : fsutil::DELETE;
+			fsutil::OP operation = fsutil::ERROR;
+			if (delbtn.get_active()) operation = fsutil::DELETE;
+			else if (trashbtn.get_active()) operation = fsutil::TRASH;
+			else if (renamebtn.get_active()) operation = fsutil::RENAME;
+
+			
+			
             for (const auto& file : overwrites) {
               if (op == "cut") {
                 fsutil::MoveObject(get<0>(file).c_str(), get<1>(file).c_str(), operation);

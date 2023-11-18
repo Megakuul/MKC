@@ -3,7 +3,17 @@ cmake_minimum_required(VERSION 3.17)
 set(CMAKE_CXX_STANDARD 23)
 
 project(mkc)
-file(GLOB_RECURSE SOURCE "src/*.cpp")
+
+set(SOURCE
+  src/main.cpp
+  src/bridge.cpp
+  src/fsutil.cpp
+  src/Components/Browser.cpp
+  src/Components/Modal.cpp
+  src/Components/Toolbar.cpp
+)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTKMM REQUIRED gtkmm-3.0)

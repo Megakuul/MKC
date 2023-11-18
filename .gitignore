@@ -5,3 +5,9 @@ CMakeFiles/**
 build/**
 resources.c
 **.deb
+.cache/
+
+# Ignore Emacs backup and autosave files
+*~
+\#*\#
+.\#*

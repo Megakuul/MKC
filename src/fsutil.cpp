@@ -32,22 +32,43 @@ namespace fsutil {
     fs::create_directories(path_buf);
   }
   
-  void DeleteObjects(string directory, vector<string> names, OP operation) {
-    if (operation == OP::DELETE) {
-      for (const string &name : names) {
-        // Could be optimized by scoping the path_buf out of the loop.
-        // But this would require all names to be only one layer below the directory
-        fs::path path_buf(directory);
-        path_buf.append(name);
-        fs::remove_all(path_buf);
-      }
-    } else if (operation == OP::TRASH) {
-      for (const string &name : names) {
-        fs::path path_buf(directory);
-        path_buf.append(name);
-        TrashObject(path_buf);
-      }
-    }
+  void DeleteObjects(string directory, vector<string> objects, OP operation) {
+	for (const string &object : objects) {
+	  fs::path path_buf(directory);
+	  path_buf.append(object);
+	  CleanObject(path_buf, operation);
+	}
+  }
+
+  
+  void CleanObject(string file, OP operation) {
+	if (operation == OP::ERROR) {
+	  return;
+	}
+	if (fs::exists(file)) {
+	  if (operation == OP::RENAME) {
+		size_t version = 1;
+		fs::path path(file);
+
+		string path_base = path.parent_path() / path.stem();
+		string path_ext = path.extension();
+
+		fs::path path_buf;
+
+		do {
+		  ++version;
+		  path_buf = path_base + ("_" + to_string(version));
+		  path_buf.replace_extension(path_ext);
+		} while (fs::exists(path_buf));
+
+		fs::rename(path, path_buf);
+	  }
+	  if (operation == OP::TRASH && (fs::is_regular_file(file) || fs::is_symlink(file))) {
+		TrashObject(file);
+	  } else {
+		fs::remove_all(file);
+	  }
+	}
   }
 
   // Helper function, to add extension to a path without modifying the path
@@ -57,20 +78,21 @@ namespace fsutil {
     return tmp_path;
   } 
 
-  void TrashObject(const string source) {
+  void TrashObject(const string file) {
     // Get and create the trash_path if it does not exist already
     fs::path trash_path = fs::path(getenv("HOME")) / ".mkc" / "trash";
     if (!fs::exists(trash_path)) {
       fs::create_directories(trash_path);
     }
     // Capture the source_path
-    fs::path src_path(source);
+    fs::path src_path(file);
 
     // Define the new filename in a format like {trash_path}{filename}{currenttime}
     trash_path.append(src_path.filename().c_str());
     time_t now = time(nullptr);
     trash_path.concat(to_string(now));
 
+	
     // Creating I/O Streams, and appending .tmp to the output file
     ifstream in(src_path, ios::binary);
     ofstream out(addext(trash_path,".tmp"), ios::binary);
@@ -96,7 +118,7 @@ namespace fsutil {
     // Set the file from .tmp to .mkc
     fs::rename(addext(trash_path,".tmp"), addext(trash_path,".mkc"));
     // Remove the old file
-    fs::remove_all(src_path);
+	CleanObject(src_path, OP::DELETE);
   }
 
   void RecoverObject(const string source) {
@@ -129,6 +151,9 @@ namespace fsutil {
       dest_path.concat(".decompressed");
     }
 
+	// Recreate path if it is not existing
+	fs::create_directories(dest_path.parent_path());
+
     ifstream in(src_path, ios::binary);
     ofstream out(addext(dest_path,".tmp"), ios::binary);
 
@@ -152,29 +177,17 @@ namespace fsutil {
     fs::rename(addext(dest_path, ".tmp"), dest_path);
 
     // Remove the metafile and the compressed file
-    fs::remove_all(src_path);
-    fs::remove_all(meta_path);
+	CleanObject(src_path, OP::DELETE);
+	CleanObject(meta_path, OP::DELETE);
   }
 
   void CopyObject(string source, string destination, OP operation) {
-    if (operation == OP::DELETE) {
-      if (fs::exists(destination))
-        fs::remove_all(destination);
-    } else if (operation == OP::TRASH) {
-      if (fs::exists(destination))
-        TrashObject(destination);
-    }
+    CleanObject(destination, operation);
     fs::copy(source, destination);
   }
 
   void MoveObject(string source, string destination, OP operation) {
-    if (operation == OP::DELETE) {
-      if (fs::exists(destination))
-        fs::remove_all(destination);
-    } else if (operation == OP::TRASH) {
-      if (fs::exists(destination))
-        TrashObject(destination);
-    }
+	CleanObject(destination, operation);	
     fs::rename(source, destination);
   }
 

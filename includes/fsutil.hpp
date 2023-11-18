@@ -39,6 +39,7 @@ namespace fsutil {
     ERROR = 0,
     DELETE = 1,
     TRASH = 2,
+	RENAME = 3,
   };
 
   /**
@@ -75,6 +76,12 @@ namespace fsutil {
   void DeleteObjects(std::string directory, std::vector<std::string> names, OP operation);
 
   /**
+   * Removes a file from the current location with the specified operation
+  */
+  void CleanObject(std::string file, OP operation);
+
+
+  /**
    * Copies an object
    * @param source source path
    * @param destination destination path
@@ -88,7 +95,6 @@ namespace fsutil {
    * @param destination destination path
   */
   void MoveObject(std::string source, std::string destination, OP operation=OP::ERROR);
-
   
   void GetFilesFromDirectory(const std::string &location, std::vector<File> &files);
 
