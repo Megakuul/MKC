@@ -83,7 +83,7 @@ namespace fsutil {
 
   void TrashObject(const string file) {
     // Get and create the trash_path if it does not exist already
-    fs::path trash_path = fs::path(getenv("HOME")) / ".mkc" / "trash";
+    fs::path trash_path = fs::path(getenv("HOME")) / TRASH_PATH_REL;
     if (!fs::exists(trash_path)) {
       fs::create_directories(trash_path);
     }
@@ -178,7 +178,6 @@ namespace fsutil {
 
     // Rename the destination file to the original value
 	MoveObject(addext(dest_path, ".tmp"), dest_path, operation);
-    fs::rename(addext(dest_path, ".tmp"), dest_path);
 
     // Remove the metafile and the compressed file
 	CleanObject(src_path, OP::DELETE);

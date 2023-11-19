@@ -1,4 +1,4 @@
-#include "gdk/gdkkeysyms.h"
+#include "keyhandler.hpp"
 #include <gtkmm.h>
 #include <iostream>
 #include <main.hpp>
@@ -40,7 +40,7 @@ MainWindow::MainWindow() : m_MainBox(Gtk::ORIENTATION_VERTICAL),
 
   // Returnbtn //
   m_Returnbtn.set_stock_id(Gtk::Stock::GO_UP);
-  m_Returnbtn.set_tooltip_text("CTRL + Z");
+  m_Returnbtn.set_tooltip_text(RETURN_KEY_LB);
   m_Returnbtn.set_margin_right(5);
   m_Returnbtn.signal_clicked().connect(
     sigc::mem_fun(*this, &MainWindow::on_returnbtn_clicked)
@@ -48,7 +48,7 @@ MainWindow::MainWindow() : m_MainBox(Gtk::ORIENTATION_VERTICAL),
   // Returnbtn //
 
   // Pathentry //
-  m_Pathentry.set_tooltip_text("CTRL + T");
+  m_Pathentry.set_tooltip_text(PATHENTRY_KEY_LB);
   m_Pathentry.set_margin_left(5);
   m_Pathentry.signal_activate().connect(
     sigc::mem_fun(*this, &MainWindow::on_pathentry_activate)
@@ -87,59 +87,7 @@ MainWindow::MainWindow() : m_MainBox(Gtk::ORIENTATION_VERTICAL),
 
 bool MainWindow::on_key_press(GdkEventKey* event)
 {  
-  if (event->state & GDK_CONTROL_MASK) {
-	switch (event->keyval) {
-	case GDK_KEY_1:
-	  bridge::wAddFile(this, CurrentBrowser->CurrentPath);
-	  break;
-	case GDK_KEY_2:
-	  bridge::wAddDir(this, CurrentBrowser->CurrentPath);
-	  break;
-	case GDK_KEY_3:
-	  if (CurrentBrowser->GetSelectedNames().empty()) {
-		bridge::wChangeDir(
-		    this, CurrentBrowser, &m_Pathentry,
-			fs::path(getenv("HOME")) / ".mkc/trash");
-	  } else {
-		bridge::wDeleteObjects(this, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
-	  }
-	  break;
-	case GDK_KEY_4:
-	  bridge::wRestoreObject(this, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
-	  break;
-	case GDK_KEY_k:
-	  bridge::wDirectCopyObjects(
-	    this,
-		CurrentBrowser->CurrentPath,
-		CurrentBrowser->RemoteBrowser->CurrentPath,
-		CurrentBrowser->GetSelectedNames(),
-		false
-	  );
-	  break;
-	case GDK_KEY_m:
-	  bridge::wDirectCopyObjects(
-	    this,
-		CurrentBrowser->CurrentPath,
-		CurrentBrowser->RemoteBrowser->CurrentPath,
-		CurrentBrowser->GetSelectedNames(),
-		true
-	  );
-	  break;
-	case GDK_KEY_t:
-	  set_focus(m_Pathentry);
-	  break;
-	case GDK_KEY_q:
-	  bridge::wChangeBrowser(this, &m_Browser_1);
-	  break;
-	case GDK_KEY_e:
-	  bridge::wChangeBrowser(this, &m_Browser_2);
-	  break;
-	case GDK_KEY_z:
-	  bridge::wChangeDir(this, CurrentBrowser, &m_Pathentry, CurrentBrowser->CurrentPath.parent_path());
-	  break;
-	}
-  }
-  return false;
+  return HandleKeyPress(event, this, CurrentBrowser, &m_Browser_1, &m_Browser_2, &m_Pathentry);
 }
 
 void MainWindow::on_returnbtn_clicked() {

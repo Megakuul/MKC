@@ -8,6 +8,9 @@
 #include <mutex>
 #include <condition_variable>
 
+// Location of the trash relative to $HOME
+#define TRASH_PATH_REL ".mkc/trash"
+
 /**
  * Functions that directly interact with the filesystem or other low level APIs
  * 

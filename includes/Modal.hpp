@@ -8,6 +8,7 @@
 /**
  * Creates a dialog for getting an input
  * @param Parent window to draw the dialog
+ * @param label text to display
  * @returns The input text or "" if it was canceled
  */
 std::string ShowInputDial(Gtk::Window *Parent, std::string label);
@@ -20,6 +21,13 @@ std::string ShowInputDial(Gtk::Window *Parent, std::string label);
  */
 fsutil::OP ShowOperationDial(Gtk::Window *Parent, std::string files="");
 
+/**
+ * Creates a dialog to confirm an action
+ * @param Parent window to draw the dialog
+ * @param label text to display
+ * @returns true if the operation is confirmed
+ */
+bool ShowConfirmDial(Gtk::Window *Parent, std::string label);
 
 /**
  * Creates a dialog to confirm deletion and ask if deleted files should be
@@ -29,5 +37,12 @@ fsutil::OP ShowOperationDial(Gtk::Window *Parent, std::string files="");
  * canceled
  */
 fsutil::OP ShowDelConfirmDial(Gtk::Window *Parent);
+
+/**
+ * Creates a dialog to display an error
+ * @param Parent window to draw the dialog
+ * @param label text to display
+ */
+void ShowErrDial(Gtk::Window *Parent, std::string label);
 
 #endif

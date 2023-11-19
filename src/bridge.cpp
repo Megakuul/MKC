@@ -1,10 +1,5 @@
 // This File contains wrappers that bridge the direct access to the filesystem (fsutil) and the frontend
 
-#include "gdkmm/types.h"
-#include "gtkmm/clipboard.h"
-#include "gtkmm/radiobutton.h"
-#include "gtkmm/radiobuttongroup.h"
-#include "gtkmm/selectiondata.h"
 #include <gtkmm.h>
 #include <bridge.hpp>
 #include <fsutil.hpp>
@@ -33,23 +28,18 @@ namespace bridge {
 
     try {
 	  if (fs::exists(fs::path(location) / filename)) {
-		Gtk::MessageDialog dial(*Parent, "Confirmation", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_OK_CANCEL);
-		dial.set_secondary_text("Overwrite existing file?");
-		
-		if (dial.run() != Gtk::RESPONSE_OK) {
+		if (!ShowConfirmDial(Parent, "Overwrite existing file?")) {
 		  return;
 		}
 	  }
       fsutil::AddFile(location, filename);
     } catch (const fs::filesystem_error error) {
-      Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-      dial.set_secondary_text(error.what());
-      dial.run();
+	  ShowErrDial(Parent, error.what());
     }
   }
 
   void wAddDir(Gtk::Window* Parent, string location) {
-
+	
 	string dirname = ShowInputDial(Parent, "Create Directory");
 	if (dirname.empty() || dirname==" ") {
 	  return;
@@ -58,9 +48,7 @@ namespace bridge {
     try {
       fsutil::AddDir(location, dirname);
     } catch (fs::filesystem_error error) {
-      Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-      dial.set_secondary_text(error.what());
-      dial.run();
+	  ShowErrDial(Parent, error.what());
     }
   }
 
@@ -80,9 +68,7 @@ namespace bridge {
     try {
       fsutil::DeleteObjects(source, objectnames, operation); 
     } catch (const fs::filesystem_error error) {
-      Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-      dial.set_secondary_text(error.what());
-      dial.run();
+	  ShowErrDial(Parent, error.what());
     }
   }
 
@@ -91,15 +77,11 @@ namespace bridge {
 	for (const auto& object : objectnames) {
 	  if (fs::path(object).extension() == ".mkc") {
 		try {
-		  fsutil::RecoverObject(fs::path(source) / object, operation);
+		  fsutil::RecoverObject(fs::path(source) / object);
 		} catch (fs::filesystem_error fserror) {
-		  Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-		  dial.set_secondary_text(fserror.what());
-		  dial.run();
+		  ShowErrDial(Parent, fserror.what());
 		} catch (exception error) {
-		  Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-		  dial.set_secondary_text(error.what());
-		  dial.run();
+		  ShowErrDial(Parent, error.what());
 		}
 	  }
 	}
@@ -124,9 +106,7 @@ namespace bridge {
 		else fsutil::CopyObject(src_buf, dest_buf, fsutil::SKIP); 
 	  }
     } catch (const fs::filesystem_error error) {
-      Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-      dial.set_secondary_text(error.what());
-      dial.run();
+	  ShowErrDial(Parent, error.what());
     }
   }
   
@@ -212,9 +192,7 @@ namespace bridge {
       });
       t.detach();
     } catch (const runtime_error error) {
-      Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-      dial.set_secondary_text(error.what());
-      dial.run();
+	  ShowErrDial(Parent, error.what());
     }
   }
 
@@ -243,9 +221,7 @@ namespace bridge {
 
 	  clipboard->store();
 	} catch (fs::filesystem_error fserror) {
-	  Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-	  dial.set_secondary_text(fserror.what());
-	  dial.run();
+	  ShowErrDial(Parent, fserror.what());
 	}
   }
 
@@ -325,9 +301,7 @@ namespace bridge {
         }
 	  });  
 	} catch (fs::filesystem_error fserror) {
-	  Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-	  dial.set_secondary_text(fserror.what());
-	  dial.run();
+	  ShowErrDial(Parent, fserror.what());
 	}
   }
 }

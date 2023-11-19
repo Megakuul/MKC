@@ -8,6 +8,7 @@ set(SOURCE
   src/main.cpp
   src/bridge.cpp
   src/fsutil.cpp
+  src/keyhandler.cpp
   src/Components/Browser.cpp
   src/Components/Modal.cpp
   src/Components/Toolbar.cpp

@@ -34,10 +34,12 @@ fsutil::OP ShowOperationDial(Gtk::Window *Parent, string files) {
   del_rad.set_active();
   dial.get_message_area()->pack_start(del_rad);
   del_rad.show();
+  
   Gtk::RadioButton trash_rad("Move replaced files to trash");
   trash_rad.set_group(selGroup);
   dial.get_message_area()->pack_start(trash_rad);
   trash_rad.show();
+  
   Gtk::RadioButton rename_rad("Rename replaced files");
   rename_rad.set_group(selGroup);
   dial.get_message_area()->pack_start(rename_rad);
@@ -56,6 +58,15 @@ fsutil::OP ShowOperationDial(Gtk::Window *Parent, string files) {
 	return fsutil::NONE;
 }
 
+
+bool ShowConfirmDial(Gtk::Window *Parent, string label) {
+  Gtk::MessageDialog dial(*Parent, "Confirmation", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_OK_CANCEL);
+  dial.set_secondary_text(label);
+
+  if (dial.run() == Gtk::RESPONSE_OK) return true;
+  else return false;
+}
+
 fsutil::OP ShowDelConfirmDial(Gtk::Window *Parent) {
   Gtk::MessageDialog dial(*Parent, "Confirmation", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_OK_CANCEL);
   dial.set_secondary_text("Delete selected object(s) recursively?");
@@ -69,4 +80,13 @@ fsutil::OP ShowDelConfirmDial(Gtk::Window *Parent) {
 	else return fsutil::DELETE;
   } else
 	return fsutil::NONE;
+}
+
+
+void ShowErrDial(Gtk::Window *Parent, string label) {
+  Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+
+  dial.set_secondary_text(label);
+
+  dial.run();
 }
