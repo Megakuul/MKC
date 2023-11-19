@@ -65,16 +65,8 @@ namespace bridge {
   }
 
   void wDeleteObjects(Gtk::Window* Parent, string source, vector<string> objectnames) {
-    Gtk::MessageDialog dial(*Parent, "Confirmation", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_OK_CANCEL);
-    dial.set_secondary_text("Delete selected objects recursively?");
-
-    Gtk::CheckButton trashbtn("Move files to trash");
-    dial.get_message_area()->pack_start(trashbtn);
-    trashbtn.show();
-
-    if (dial.run() != Gtk::RESPONSE_OK) {
-      return;
-    }
+	
+	fsutil::OP operation = ShowDelConfirmDial(Parent);
 
     // Do not delete current dir 
     objectnames.erase(
@@ -86,7 +78,6 @@ namespace bridge {
     );
 
     try {
-      const auto operation = trashbtn.get_active() ? fsutil::TRASH : fsutil::DELETE; 
       fsutil::DeleteObjects(source, objectnames, operation); 
     } catch (const fs::filesystem_error error) {
       Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
@@ -97,9 +88,6 @@ namespace bridge {
 
   void wRestoreObject(Gtk::Window* Parent, string source, vector<string> objectnames) {
 	fsutil::OP operation = ShowOperationDial(Parent);
-	if (operation==fsutil::ERROR) {
-	  return;
-	}
 	for (const auto& object : objectnames) {
 	  if (fs::path(object).extension() == ".mkc") {
 		try {
@@ -317,7 +305,7 @@ namespace bridge {
             fsutil::CopyObject(src_path.c_str(), dest_path.c_str());
           }
         }
-
+		
         // Handle duplicated elements
         if (!overwrites.empty()) {
           string files;
@@ -327,14 +315,12 @@ namespace bridge {
           }
 
 		  fsutil::OP operation = ShowOperationDial(Parent, files);
-		  if (operation!=fsutil::ERROR) {
-			for (const auto& file : overwrites) {
-              if (op == "cut") {
-                fsutil::MoveObject(get<0>(file).c_str(), get<1>(file).c_str(), operation);
-              } else if (op == "copy") {
-                fsutil::CopyObject(get<0>(file).c_str(), get<1>(file).c_str(), operation);
-              }
-            }
+		  for (const auto& file : overwrites) {
+			if (op == "cut") {
+			  fsutil::MoveObject(get<0>(file).c_str(), get<1>(file).c_str(), operation);
+			} else if (op == "copy") {
+			  fsutil::CopyObject(get<0>(file).c_str(), get<1>(file).c_str(), operation);
+			}
 		  }
         }
 	  });  

@@ -45,7 +45,7 @@ namespace fsutil {
 
   
   void CleanObject(string file, OP operation) {
-	if (operation == OP::ERROR || operation == OP::SKIP) {
+	if (operation==OP::NONE||operation==OP::SKIP||operation==OP::ERROR) {
 	  return;
 	}
 	if (fs::exists(file)) {
@@ -186,6 +186,7 @@ namespace fsutil {
   }
 
   void CopyObject(string source, string destination, OP operation) {
+	if (operation==fsutil::NONE) return;
 	if (source==destination) return;
     CleanObject(destination, operation);
 	if (operation==fsutil::SKIP && (!fs::exists(source) || fs::exists(destination))) {
@@ -195,6 +196,7 @@ namespace fsutil {
   }
  
   void MoveObject(string source, string destination, OP operation) {
+	if (operation==fsutil::NONE) return;
 	if (source==destination) return;
 	CleanObject(destination, operation);
 	if (operation==fsutil::SKIP && (!fs::exists(source) || fs::exists(destination))) {

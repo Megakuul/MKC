@@ -1,3 +1,8 @@
+#include "fsutil.hpp"
+#include "gtkmm/checkbutton.h"
+#include "gtkmm/dialog.h"
+#include "gtkmm/enums.h"
+#include "gtkmm/messagedialog.h"
 #include <gtkmm.h>
 #include <Modal.hpp>
 #include <string>
@@ -24,30 +29,44 @@ fsutil::OP ShowOperationDial(Gtk::Window *Parent, string files) {
 
   Gtk::RadioButtonGroup selGroup;
 
-  Gtk::RadioButton delbtn("Delete replaced files");
-  delbtn.set_group(selGroup);
-  delbtn.set_active();
-  dial.get_message_area()->pack_start(delbtn);
-  delbtn.show();
-  Gtk::RadioButton trashbtn("Move replaced files to trash");
-  trashbtn.set_group(selGroup);
-  dial.get_message_area()->pack_start(trashbtn);
-  trashbtn.show();
-  Gtk::RadioButton renamebtn("Rename replaced files");
-  renamebtn.set_group(selGroup);
-  dial.get_message_area()->pack_start(renamebtn);
-  renamebtn.show();
+  Gtk::RadioButton del_rad("Delete replaced files");
+  del_rad.set_group(selGroup);
+  del_rad.set_active();
+  dial.get_message_area()->pack_start(del_rad);
+  del_rad.show();
+  Gtk::RadioButton trash_rad("Move replaced files to trash");
+  trash_rad.set_group(selGroup);
+  dial.get_message_area()->pack_start(trash_rad);
+  trash_rad.show();
+  Gtk::RadioButton rename_rad("Rename replaced files");
+  rename_rad.set_group(selGroup);
+  dial.get_message_area()->pack_start(rename_rad);
+  rename_rad.show();
 
   if (files!="") 
 	dial.set_secondary_text("processing:\n"+files);
 
   if (dial.run() == Gtk::RESPONSE_OK) {
-	fsutil::OP operation = fsutil::ERROR;
-	if (delbtn.get_active()) operation = fsutil::DELETE;
-	else if (trashbtn.get_active()) operation = fsutil::TRASH;
-	else if (renamebtn.get_active()) operation = fsutil::RENAME;
+	fsutil::OP operation = fsutil::NONE;
+	if (del_rad.get_active()) operation = fsutil::DELETE;
+	else if (trash_rad.get_active()) operation = fsutil::TRASH;
+	else if (rename_rad.get_active()) operation = fsutil::RENAME;
 	return operation;
-  } else {
-	return fsutil::ERROR;
-  }
+  } else
+	return fsutil::NONE;
+}
+
+fsutil::OP ShowDelConfirmDial(Gtk::Window *Parent) {
+  Gtk::MessageDialog dial(*Parent, "Confirmation", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_OK_CANCEL);
+  dial.set_secondary_text("Delete selected object(s) recursively?");
+  
+  Gtk::CheckButton trash_bx("Move file(s) to trash");
+  dial.get_message_area()->pack_start(trash_bx);
+  trash_bx.show();
+
+  if (dial.run() == Gtk::RESPONSE_OK) {
+	if (trash_bx.get_active()) return fsutil::TRASH;
+	else return fsutil::DELETE;
+  } else
+	return fsutil::NONE;
 }

@@ -36,11 +36,12 @@ namespace fsutil {
    * TRASH = Duplicated files are moved to the trash
   */
   enum OP {
-    ERROR = 0,
+    NONE = 0,
 	SKIP = 1,
     DELETE = 2,
     TRASH = 3,
 	RENAME = 4,
+	ERROR = 5
   };
 
   /**
