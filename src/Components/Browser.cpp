@@ -12,8 +12,8 @@
 using namespace std;
 namespace fs = filesystem;
 
-Browser::Browser(Gtk::Window *Parent, string basePath, Browser *&currentBrowser, Gtk::Entry *pathEntry) : 
-    CurrentPath(basePath), m_parent(Parent)  {
+Browser::Browser(Gtk::Window *Parent, string basePath, Browser *&currentBrowser, Browser *remoteBrowser, Gtk::Entry *pathEntry) : 
+  CurrentPath(basePath), RemoteBrowser(remoteBrowser), m_parent(Parent)  {
   
   m_listStore = Gtk::ListStore::create(m_columns);
   set_opacity(0.6);
@@ -37,10 +37,10 @@ Browser::Browser(Gtk::Window *Parent, string basePath, Browser *&currentBrowser,
       fs::path new_path = CurrentPath;
       bridge::wChangeDir(Parent, this, pathEntry, new_path.append(name));
     } else if (type == "f") {
-      string cmd = "xdg-open \"" + (CurrentPath / name).string() + "\"";
-      system(cmd.c_str());
+	  bridge::wDefaultOpenObject((CurrentPath / name).string());
     }
   });
+  
 
   signal_key_press_event().connect(sigc::mem_fun(
     *this,
@@ -134,7 +134,7 @@ Browser::Browser(Gtk::Window *Parent, string basePath, Browser *&currentBrowser,
     }
  
     ss << fixed << setprecision(2) << shorten_num << suffix;
-    dynamic_cast<Gtk::CellRendererText*>(renderer)->property_text() = ss.str();
+    static_cast<Gtk::CellRendererText*>(renderer)->property_text() = ss.str();
   });
   size->signal_clicked().connect([this] {
     on_header_clicked(&m_columns.size);
@@ -177,7 +177,7 @@ Browser::Browser(Gtk::Window *Parent, string basePath, Browser *&currentBrowser,
     char buffer[30];
     strftime(buffer, sizeof(buffer), "%H:%M %d-%m-%Y", loc_time);
 
-    dynamic_cast<Gtk::CellRendererText*>(renderer)->property_text() = buffer;
+    static_cast<Gtk::CellRendererText*>(renderer)->property_text() = buffer;
   });
   lastEdited->signal_clicked().connect([this] {
     on_header_clicked(&m_columns.lastEdited);
@@ -245,9 +245,15 @@ bool Browser::on_key_press(GdkEventKey* event)
 {  
   if (event->state & GDK_CONTROL_MASK) {
     switch (event->keyval) {
-      case GDK_KEY_v:
-        bridge::wHandlePaste(this->m_parent, this);
+	case GDK_KEY_v:
+	  bridge::wHandleGnomePaste(this->m_parent, this);
       break;
+	case GDK_KEY_c:
+	  bridge::wHandleGnomeCopy(this->m_parent, this, false);
+	  break;
+	case GDK_KEY_x:
+	  bridge::wHandleGnomeCopy(this->m_parent, this, true);
+	  break;
     }
   }
   return false;

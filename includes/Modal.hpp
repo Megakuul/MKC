@@ -3,21 +3,21 @@
 
 #include <gtkmm.h>
 #include <string>
+#include <fsutil.hpp>
 
-class Modal : public Gtk::Dialog {
-public:
-    /**
-     * Creates a Modal Window
-     * @param label Label of the Modal Box
-     * @param Parent Parent Window that hosts the Modal
-     * @param input input for the Modal Box
-     * @param answer answer of the Modal Box (Apply=true, Cancel=false)
-    */
-    Modal(std::string label, Gtk::Window *Parent, std::string* input, bool *answer=nullptr);
+/**
+ * Creates a dialog for getting an input
+ * @param Parent window to draw the dialog
+ * @returns The input text or "" if it was canceled
+ */
+std::string ShowInputDial(Gtk::Window *Parent, std::string label);
 
-protected:
-    Gtk::Entry entry;
-    Gtk::Label title;
-};
+/**
+ * Creates a dialog for selecting the operation
+ * @param Parent window to draw the dialog
+ * @param files that are processed by the operation
+ * @returns The operation selected or OP::ERROR if it was canceled
+ */
+fsutil::OP ShowOperationDial(Gtk::Window *Parent, std::string files="");
 
 #endif

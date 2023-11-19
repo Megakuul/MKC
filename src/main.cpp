@@ -1,3 +1,4 @@
+#include "gdk/gdkkeysyms.h"
 #include <gtkmm.h>
 #include <iostream>
 #include <main.hpp>
@@ -17,8 +18,8 @@ MainWindow::MainWindow() : m_MainBox(Gtk::ORIENTATION_VERTICAL),
                            m_Returnbtn(),
                            m_Pathentry(),
                            m_SplitBox(Gtk::ORIENTATION_HORIZONTAL),
-                           m_Browser_1(this, "/", CurrentBrowser, &m_Pathentry),
-                           m_Browser_2(this, "/", CurrentBrowser, &m_Pathentry),
+                           m_Browser_1(this, "/", CurrentBrowser, &m_Browser_2, &m_Pathentry),
+                           m_Browser_2(this, "/", CurrentBrowser, &m_Browser_1, &m_Pathentry),
                            m_Scrollable_1(),
                            m_Scrollable_2(),
                            CurrentBrowser(&m_Browser_1) {
@@ -42,16 +43,16 @@ MainWindow::MainWindow() : m_MainBox(Gtk::ORIENTATION_VERTICAL),
   m_Returnbtn.set_tooltip_text("CTRL + Z");
   m_Returnbtn.set_margin_right(5);
   m_Returnbtn.signal_clicked().connect(
-									   sigc::mem_fun(*this, &MainWindow::on_returnbtn_clicked)
-									   );
+    sigc::mem_fun(*this, &MainWindow::on_returnbtn_clicked)
+  );
   // Returnbtn //
 
   // Pathentry //
   m_Pathentry.set_tooltip_text("CTRL + T");
   m_Pathentry.set_margin_left(5);
   m_Pathentry.signal_activate().connect(
-										sigc::mem_fun(*this, &MainWindow::on_pathentry_activate)
-										);
+    sigc::mem_fun(*this, &MainWindow::on_pathentry_activate)
+  );
   // Pathentry //
 
   // Splitbrowser //
@@ -105,6 +106,24 @@ bool MainWindow::on_key_press(GdkEventKey* event)
 	  break;
 	case GDK_KEY_4:
 	  bridge::wRestoreObject(this, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
+	  break;
+	case GDK_KEY_k:
+	  bridge::wDirectCopyObjects(
+	    this,
+		CurrentBrowser->CurrentPath,
+		CurrentBrowser->RemoteBrowser->CurrentPath,
+		CurrentBrowser->GetSelectedNames(),
+		false
+	  );
+	  break;
+	case GDK_KEY_m:
+	  bridge::wDirectCopyObjects(
+	    this,
+		CurrentBrowser->CurrentPath,
+		CurrentBrowser->RemoteBrowser->CurrentPath,
+		CurrentBrowser->GetSelectedNames(),
+		true
+	  );
 	  break;
 	case GDK_KEY_t:
 	  set_focus(m_Pathentry);

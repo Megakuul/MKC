@@ -37,9 +37,10 @@ namespace fsutil {
   */
   enum OP {
     ERROR = 0,
-    DELETE = 1,
-    TRASH = 2,
-	RENAME = 3,
+	SKIP = 1,
+    DELETE = 2,
+    TRASH = 3,
+	RENAME = 4,
   };
 
   /**
@@ -66,7 +67,7 @@ namespace fsutil {
    * Puts a compressed object back into its original form
    * @param source Object path
   */
-  void RecoverObject(const std::string source);
+  void RecoverObject(const std::string source, OP operation=OP::ERROR);
 
   /**
    * Recursively deletes every file or directory in the names vector contained in the directory path
@@ -135,7 +136,8 @@ namespace fsutil {
                    std::function<void(std::string)> on_create,
                    std::function<void(std::string)> on_delete,
                    std::function<void(std::string)> on_moved_in,
-                   std::function<void(std::string)> on_moved_away);
+                   std::function<void(std::string)> on_moved_away,
+				   std::function<void(std::string)> on_changed);
   
   /**
    * Deallocates all Filewatchers that are associated with the state

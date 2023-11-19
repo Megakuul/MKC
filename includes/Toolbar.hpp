@@ -9,10 +9,12 @@ public:
     Toolbar(Gtk::Window *Parent, Browser*& CurrentBrowser);
 
 protected:
-    Gtk::ToolButton AFileBtn;
-    Gtk::ToolButton ADirBtn;
-    Gtk::ToolButton DObjBtn;
-    Gtk::ToolButton RObjBtn;
+  Gtk::ToolButton AFileBtn;
+  Gtk::ToolButton ADirBtn;
+  Gtk::ToolButton DObjBtn;
+  Gtk::ToolButton RObjBtn;
+  Gtk::ToolButton CObjBtn;
+  Gtk::ToolButton MObjBtn;
 };
 
 #endif

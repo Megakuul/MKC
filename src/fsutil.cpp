@@ -1,5 +1,6 @@
 // This File contains utility functions to directly manipulate the filesystem
 
+#include <cstdlib>
 #include <fsutil.hpp>
 #include <iostream>
 #include <fstream>
@@ -22,7 +23,9 @@ namespace fsutil {
     fs::path path_buf = directory;
     path_buf.append(name);
 
-    ofstream(path_buf.c_str());
+    ofstream out(path_buf.c_str());
+	
+	out.close();
   }
 
   void AddDir(string directory, string name) {
@@ -42,7 +45,7 @@ namespace fsutil {
 
   
   void CleanObject(string file, OP operation) {
-	if (operation == OP::ERROR) {
+	if (operation == OP::ERROR || operation == OP::SKIP) {
 	  return;
 	}
 	if (fs::exists(file)) {
@@ -121,7 +124,7 @@ namespace fsutil {
 	CleanObject(src_path, OP::DELETE);
   }
 
-  void RecoverObject(const string source) {
+  void RecoverObject(const string source, OP operation) {
     // Generating required paths
     fs::path src_path(source);
     fs::path dest_path;
@@ -174,6 +177,7 @@ namespace fsutil {
     out.write(out_data.data(), out_size);
 
     // Rename the destination file to the original value
+	MoveObject(addext(dest_path, ".tmp"), dest_path, operation);
     fs::rename(addext(dest_path, ".tmp"), dest_path);
 
     // Remove the metafile and the compressed file
@@ -182,15 +186,22 @@ namespace fsutil {
   }
 
   void CopyObject(string source, string destination, OP operation) {
+	if (source==destination) return;
     CleanObject(destination, operation);
+	if (operation==fsutil::SKIP && (!fs::exists(source) || fs::exists(destination))) {
+	  return;
+	}
     fs::copy(source, destination);
   }
-
+ 
   void MoveObject(string source, string destination, OP operation) {
-	CleanObject(destination, operation);	
+	if (source==destination) return;
+	CleanObject(destination, operation);
+	if (operation==fsutil::SKIP && (!fs::exists(source) || fs::exists(destination))) {
+	  return;
+	}
     fs::rename(source, destination);
   }
-
 
   void GetFilesFromDirectory(const string &location, vector<File> &files) {
     DIR* dir = opendir(location.c_str());
@@ -202,37 +213,10 @@ namespace fsutil {
     while ((entry = readdir(dir)) != nullptr) {
       struct File file_buf;
 
-      struct stat stat_buf;
-      fs::path path_buf(location);
-      path_buf.append(entry->d_name);
-      int res = stat(path_buf.c_str(), &stat_buf);
-      if (res != 0) {
-        files.push_back({
-          entry->d_name,"e",0,0,"",0
-        });
-        continue;
-      }
+	  fs::path path_buf(location);
+	  path_buf.append(entry->d_name);
 
-      file_buf.name = entry->d_name;
-
-      if (S_ISREG(stat_buf.st_mode))
-        file_buf.type = "f";
-      else if (S_ISDIR(stat_buf.st_mode))
-        file_buf.type = "d";
-      else if (S_ISLNK(stat_buf.st_mode))
-        file_buf.type = "s";
-      else
-        file_buf.type = "o";
-      
-      file_buf.hardlink = stat_buf.st_nlink;
-      file_buf.size = stat_buf.st_size;
-      {
-        int user = (stat_buf.st_mode & S_IRWXU) >> 6;
-        int group = (stat_buf.st_mode & S_IRWXG) >> 3;
-        int other = stat_buf.st_mode & S_IRWXO;
-        file_buf.access = to_string(user * 100 + group * 10 + other);
-      }
-      file_buf.lastEdited = stat_buf.st_mtime;
+	  GetFileInformation(path_buf, file_buf);
 
       files.push_back(file_buf);
     }
@@ -296,8 +280,8 @@ namespace fsutil {
                    function<void(string)> on_create,
                    function<void(string)> on_delete,
                    function<void(string)> on_moved_in,
-                   function<void(string)> on_moved_away
-                  ) {
+                   function<void(string)> on_moved_away,
+				   function<void(string)> on_changed) {
     int length, i = 0;
     int filedescriptor;
     int watchdescriptor;
@@ -308,7 +292,9 @@ namespace fsutil {
       throw runtime_error("Failed to init Filewatcher");
     }
 
-    watchdescriptor = inotify_add_watch(filedescriptor, directory.c_str(), IN_CREATE | IN_DELETE | IN_MOVED_FROM | IN_MOVED_TO);
+    watchdescriptor =
+	  inotify_add_watch(filedescriptor, directory.c_str(),
+						IN_CREATE | IN_DELETE | IN_MOVED_FROM | IN_MOVED_TO | IN_MODIFY | IN_ATTRIB);
 
     while (!state) {
       i = 0;
@@ -332,6 +318,8 @@ namespace fsutil {
               on_moved_away(event->name);
             else if (event->mask & IN_MOVED_TO)
               on_moved_in(event->name);
+			else if (event->mask & IN_ALL_EVENTS)
+			  on_changed(event->name);
           }
           i += sizeof(struct inotify_event) + event->len;
         }
@@ -346,5 +334,4 @@ namespace fsutil {
     }
     state_cv.notify_one();
   }
-
 }

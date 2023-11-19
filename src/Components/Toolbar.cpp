@@ -1,3 +1,4 @@
+#include "gtkmm/stock.h"
 #include <gtkmm.h>
 #include <Toolbar.hpp>
 #include <Modal.hpp>
@@ -8,7 +9,8 @@
 
 using namespace std;
 
-Toolbar::Toolbar(Gtk::Window *Parent, Browser *&CurrentBrowser) : AFileBtn(), ADirBtn(), DObjBtn(), RObjBtn() {
+Toolbar::Toolbar(Gtk::Window *Parent, Browser *&CurrentBrowser)
+  : AFileBtn(), ADirBtn(), DObjBtn(), RObjBtn(), CObjBtn(), MObjBtn() {
     set_name("toolbar");
     
     AFileBtn.set_stock_id(Gtk::Stock::FILE);
@@ -22,22 +24,48 @@ Toolbar::Toolbar(Gtk::Window *Parent, Browser *&CurrentBrowser) : AFileBtn(), AD
 
     RObjBtn.set_stock_id(Gtk::Stock::REVERT_TO_SAVED);
     RObjBtn.set_tooltip_text("CTRL + 4");
+
+    CObjBtn.set_stock_id(Gtk::Stock::COPY);
+    CObjBtn.set_tooltip_text("CTRL + K");
+	
+	MObjBtn.set_stock_id(Gtk::Stock::CUT);
+    MObjBtn.set_tooltip_text("CTRL + M");
     
     add(AFileBtn);
     add(ADirBtn);
     add(DObjBtn);
     add(RObjBtn);
+	add(CObjBtn);
+	add(MObjBtn);
 
     AFileBtn.signal_clicked().connect([Parent,&CurrentBrowser] {
-        bridge::wAddFile(Parent, CurrentBrowser->CurrentPath);
+	  bridge::wAddFile(Parent, CurrentBrowser->CurrentPath);
     });
     ADirBtn.signal_clicked().connect([Parent,&CurrentBrowser] {
-        bridge::wAddDir(Parent, CurrentBrowser->CurrentPath);
+	  bridge::wAddDir(Parent, CurrentBrowser->CurrentPath);
     });
     DObjBtn.signal_clicked().connect([Parent,&CurrentBrowser] {
-        bridge::wDeleteObjects(Parent, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
+	  bridge::wDeleteObjects(Parent, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
     });
     RObjBtn.signal_clicked().connect([Parent,&CurrentBrowser] {
-        bridge::wRestoreObject(Parent, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
+	  bridge::wRestoreObject(Parent, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
     });
+	CObjBtn.signal_clicked().connect([Parent,&CurrentBrowser] {
+	  bridge::wDirectCopyObjects(
+	    Parent,
+		CurrentBrowser->CurrentPath,
+		CurrentBrowser->RemoteBrowser->CurrentPath,
+		CurrentBrowser->GetSelectedNames(),
+		false
+	  );
+	});
+	MObjBtn.signal_clicked().connect([Parent,&CurrentBrowser] {
+	  bridge::wDirectCopyObjects(
+	    Parent,
+		CurrentBrowser->CurrentPath,
+		CurrentBrowser->RemoteBrowser->CurrentPath,
+		CurrentBrowser->GetSelectedNames(),
+		true
+	  );
+	});
 }

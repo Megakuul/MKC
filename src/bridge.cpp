@@ -1,7 +1,10 @@
 // This File contains wrappers that bridge the direct access to the filesystem (fsutil) and the frontend
 
+#include "gdkmm/types.h"
+#include "gtkmm/clipboard.h"
 #include "gtkmm/radiobutton.h"
 #include "gtkmm/radiobuttongroup.h"
+#include "gtkmm/selectiondata.h"
 #include <gtkmm.h>
 #include <bridge.hpp>
 #include <fsutil.hpp>
@@ -20,6 +23,135 @@ using namespace std;
 namespace fs = filesystem;
 
 namespace bridge {
+  
+  void wAddFile(Gtk::Window* Parent, string location) {
+	
+    string filename = ShowInputDial(Parent, "Create File");
+	if (filename.empty() || filename==" ") {
+	  return;
+	}
+
+    try {
+	  if (fs::exists(fs::path(location) / filename)) {
+		Gtk::MessageDialog dial(*Parent, "Confirmation", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_OK_CANCEL);
+		dial.set_secondary_text("Overwrite existing file?");
+		
+		if (dial.run() != Gtk::RESPONSE_OK) {
+		  return;
+		}
+	  }
+      fsutil::AddFile(location, filename);
+    } catch (const fs::filesystem_error error) {
+      Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+      dial.set_secondary_text(error.what());
+      dial.run();
+    }
+  }
+
+  void wAddDir(Gtk::Window* Parent, string location) {
+
+	string dirname = ShowInputDial(Parent, "Create Directory");
+	if (dirname.empty() || dirname==" ") {
+	  return;
+	}
+
+    try {
+      fsutil::AddDir(location, dirname);
+    } catch (fs::filesystem_error error) {
+      Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+      dial.set_secondary_text(error.what());
+      dial.run();
+    }
+  }
+
+  void wDeleteObjects(Gtk::Window* Parent, string source, vector<string> objectnames) {
+    Gtk::MessageDialog dial(*Parent, "Confirmation", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_OK_CANCEL);
+    dial.set_secondary_text("Delete selected objects recursively?");
+
+    Gtk::CheckButton trashbtn("Move files to trash");
+    dial.get_message_area()->pack_start(trashbtn);
+    trashbtn.show();
+
+    if (dial.run() != Gtk::RESPONSE_OK) {
+      return;
+    }
+
+    // Do not delete current dir 
+    objectnames.erase(
+      remove(objectnames.begin(), objectnames.end(), "."), objectnames.end()
+    );
+    // Do not delete the last dir 
+    objectnames.erase(
+      remove(objectnames.begin(), objectnames.end(), ".."), objectnames.end()
+    );
+
+    try {
+      const auto operation = trashbtn.get_active() ? fsutil::TRASH : fsutil::DELETE; 
+      fsutil::DeleteObjects(source, objectnames, operation); 
+    } catch (const fs::filesystem_error error) {
+      Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+      dial.set_secondary_text(error.what());
+      dial.run();
+    }
+  }
+
+  void wRestoreObject(Gtk::Window* Parent, string source, vector<string> objectnames) {
+	fsutil::OP operation = ShowOperationDial(Parent);
+	if (operation==fsutil::ERROR) {
+	  return;
+	}
+	for (const auto& object : objectnames) {
+	  if (fs::path(object).extension() == ".mkc") {
+		try {
+		  fsutil::RecoverObject(fs::path(source) / object, operation);
+		} catch (fs::filesystem_error fserror) {
+		  Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+		  dial.set_secondary_text(fserror.what());
+		  dial.run();
+		} catch (exception error) {
+		  Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+		  dial.set_secondary_text(error.what());
+		  dial.run();
+		}
+	  }
+	}
+  }
+
+  void wDirectCopyObjects(Gtk::Window* Parent, string source, string destination, vector<string> objectnames, bool cut) {
+    // Do not delete current dir 
+    objectnames.erase(
+      remove(objectnames.begin(), objectnames.end(), "."), objectnames.end()
+    );
+    // Do not delete the last dir 
+    objectnames.erase(
+      remove(objectnames.begin(), objectnames.end(), ".."), objectnames.end()
+    );
+
+    try {
+	  for (string object : objectnames) {
+		fs::path src_buf(fs::path(source) / object);
+		fs::path dest_buf(fs::path(destination) / object);
+		
+		if (cut) fsutil::MoveObject(src_buf, dest_buf, fsutil::SKIP);
+		else fsutil::CopyObject(src_buf, dest_buf, fsutil::SKIP); 
+	  }
+    } catch (const fs::filesystem_error error) {
+      Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+      dial.set_secondary_text(error.what());
+      dial.run();
+    }
+  }
+  
+  void wDefaultOpenObject(string path) {
+	pid_t pid = fork();
+	if (pid == 0) {
+	  setsid();
+
+	  execl("/usr/bin/xdg-open", "xdg-open", path.c_str(), (char*) NULL);
+
+	  std::exit(EXIT_FAILURE);
+	}
+  }
 
   void wChangeBrowser(Gtk::Window* mainWindow, Browser* newBrowser) {
     mainWindow->set_focus(*newBrowser);
@@ -54,6 +186,7 @@ namespace bridge {
             fsutil::File file;
             fsutil::GetFileInformation(cur_path.c_str(), file);
             Glib::signal_idle().connect_once([browser, file] {
+			  browser->RemoveElement(file.name);
               browser->AddElement(file);
             });
           }, [browser](string filename){
@@ -68,12 +201,23 @@ namespace bridge {
             fsutil::File file;
             fsutil::GetFileInformation(cur_path.c_str(), file);
             Glib::signal_idle().connect_once([browser, file] {
+			  browser->RemoveElement(file.name);
               browser->AddElement(file);
             });
           }, [browser](string filename){
             // on moved away
             Glib::signal_idle().connect_once([browser, filename] {
               browser->RemoveElement(filename);
+            });
+          }, [browser](string filename){
+            // on changed
+            fs::path cur_path = browser->CurrentPath;
+            cur_path.append(filename);
+            fsutil::File file;
+            fsutil::GetFileInformation(cur_path.c_str(), file);
+            Glib::signal_idle().connect_once([browser, file] {
+			  browser->RemoveElement(file.name);
+              browser->AddElement(file);
             });
           }
         );
@@ -86,97 +230,42 @@ namespace bridge {
     }
   }
 
-  void wDeleteObjects(Gtk::Window* Parent, string location, vector<string> objectnames) {
-    Gtk::MessageDialog dial(*Parent, "Confirmation", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_OK_CANCEL);
-    dial.set_secondary_text("Delete selected objects recursively?");
 
-    Gtk::CheckButton trashbtn("Move files to trash (only reg_files and sym_lnk)");
-    dial.get_message_area()->pack_start(trashbtn);
-    trashbtn.show();
+  void wHandleGnomeCopy(Gtk::Window* Parent, Browser* CurrentBrowser, bool cut) {
+	try {
+	  auto clipboard = Gtk::Clipboard::get();
+	  clipboard->set({Gtk::TargetEntry("x-special/gnome-copied-files")}, [CurrentBrowser, cut](Gtk::SelectionData& data, const unsigned int /* target index */) {
+		string data_buf = cut ? "cut" : "copy";
+		
+		for (auto name : CurrentBrowser->GetSelectedNames()) {
+		  fs::path cur_path(CurrentBrowser->CurrentPath);
+		  cur_path.append(name);
+		  char* cur_uri = dyn_encpath(cur_path.c_str());
+		  if (!cur_uri) {
+			// If the selection contained an invalid path (not in FS format)
+			throw fs::filesystem_error("Invalid filepattern", fs::path(cur_uri), error_code());
+		  }
 
-    if (dial.run() != Gtk::RESPONSE_OK) {
-      return;
-    }
+		  data_buf += "\n";
+		  data_buf += cur_uri;
+		}
 
-    // Do not delete current dir 
-    objectnames.erase(
-      remove(objectnames.begin(), objectnames.end(), "."), objectnames.end()
-    );
-    // Do not delete the last dir 
-    objectnames.erase(
-      remove(objectnames.begin(), objectnames.end(), ".."), objectnames.end()
-    );
+		data.set(data.get_target(), data_buf);
+	  }, [](){});
 
-    try {
-      const auto operation = trashbtn.get_active() ? fsutil::TRASH : fsutil::DELETE; 
-      fsutil::DeleteObjects(location, objectnames, operation); 
-    } catch (const fs::filesystem_error error) {
-      Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-      dial.set_secondary_text(error.what());
-      dial.run();
-    }
+	  clipboard->store();
+	} catch (fs::filesystem_error fserror) {
+	  Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+	  dial.set_secondary_text(fserror.what());
+	  dial.run();
+	}
   }
 
-  void wAddFile(Gtk::Window* Parent, string location) {
-    string filename;
-
-    Modal mod("Create File", Parent, &filename);
-
-    if (filename.empty() || filename==" ") {
-      return;
-    }
-
-    try {
-      fsutil::AddFile(location, filename);
-    } catch (const fs::filesystem_error error) {
-      Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-      dial.set_secondary_text(error.what());
-      dial.run();
-    }
-  }
-
-  void wAddDir(Gtk::Window* Parent, string location) {
-    string dirname;
-
-    Modal mod("Create Directory", Parent, &dirname);
-
-    if (dirname.empty() || dirname==" ") {
-      return;
-    }
-
-    try {
-      fsutil::AddDir(location, dirname);
-    } catch (fs::filesystem_error error) {
-      Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-      dial.set_secondary_text(error.what());
-      dial.run();
-    }
-  }
-
-  void wRestoreObject(Gtk::Window* Parent, string location, vector<string> objectnames) {
-    for (const auto& object : objectnames) {
-      if (fs::path(object).extension() == ".mkc") {
-        try {
-          fsutil::RecoverObject(fs::path(location) / object);
-        } catch (fs::filesystem_error fserror) {
-          Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-          dial.set_secondary_text(fserror.what());
-          dial.run();
-        } catch (exception error) {
-          Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-          dial.set_secondary_text(error.what());
-          dial.run();
-        }
-      }
-    }
-  }
-
-  void wHandlePaste(Gtk::Window* Parent, Browser* CurrentBrowser) {
-    // TODO: The clipboard is currently only compatible with GNOME
-    auto clipboard = Gtk::Clipboard::get();
-    clipboard->request_contents("x-special/gnome-copied-files", [CurrentBrowser, Parent](const Gtk::SelectionData& data) {
-      try {
-        auto text = data.get_data_as_string();
+  void wHandleGnomePaste(Gtk::Window* Parent, Browser* CurrentBrowser) {
+	try {
+	  auto clipboard = Gtk::Clipboard::get();
+	  clipboard->request_contents("x-special/gnome-copied-files", [CurrentBrowser, Parent](const Gtk::SelectionData& data) {
+		auto text = data.get_data_as_string();
         if (text.empty()) {
           return;
         }
@@ -194,7 +283,7 @@ namespace bridge {
         /**
          * List of files that must be overwritten
          * First attr is the src_path the second the dest_path
-        */
+		 */
         vector<tuple<fs::path, fs::path>> overwrites;
         while (getline(stream, curUri)) {
           // Decode URI, the clipboard does return the filepath as html uri (e.g. file:///dir/file)
@@ -233,51 +322,26 @@ namespace bridge {
         if (!overwrites.empty()) {
           string files;
           for (const auto& file : overwrites) {
-            files.append("\n");
+            files.append("\n- ");
             files.append(get<0>(file).filename());
           }
-          Gtk::MessageDialog dial(*Parent, "Conflicting Files", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_OK_CANCEL);
 
-		  Gtk::RadioButtonGroup selGroup;
-
-		  Gtk::RadioButton delbtn("Delete replaced files");
-		  delbtn.set_group(selGroup);
-		  delbtn.set_active();
-		  dial.get_message_area()->pack_start(delbtn);
-		  delbtn.show();
-          Gtk::RadioButton trashbtn("Move replaced files to trash");
-		  trashbtn.set_group(selGroup);
-		  dial.get_message_area()->pack_start(trashbtn);
-		  trashbtn.show();
-		  Gtk::RadioButton renamebtn("Rename replaced files");
-		  renamebtn.set_group(selGroup);
-		  dial.get_message_area()->pack_start(renamebtn);
-		  renamebtn.show();
-
-          dial.set_secondary_text("Overwrite:\n"+files);
-
-          if (dial.run() == Gtk::RESPONSE_OK) {
-			fsutil::OP operation = fsutil::ERROR;
-			if (delbtn.get_active()) operation = fsutil::DELETE;
-			else if (trashbtn.get_active()) operation = fsutil::TRASH;
-			else if (renamebtn.get_active()) operation = fsutil::RENAME;
-
-			
-			
-            for (const auto& file : overwrites) {
+		  fsutil::OP operation = ShowOperationDial(Parent, files);
+		  if (operation!=fsutil::ERROR) {
+			for (const auto& file : overwrites) {
               if (op == "cut") {
                 fsutil::MoveObject(get<0>(file).c_str(), get<1>(file).c_str(), operation);
               } else if (op == "copy") {
                 fsutil::CopyObject(get<0>(file).c_str(), get<1>(file).c_str(), operation);
               }
             }
-          }
+		  }
         }
-      } catch (fs::filesystem_error fserror) {
-        Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
-        dial.set_secondary_text(fserror.what());
-        dial.run();
-      }
-    });
+	  });  
+	} catch (fs::filesystem_error fserror) {
+	  Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+	  dial.set_secondary_text(fserror.what());
+	  dial.run();
+	}
   }
 }

@@ -12,7 +12,7 @@
 class Browser : public Gtk::TreeView {
 
 public:
-  Browser(Gtk::Window *Parent, std::string basePath, Browser *&currentBrowser, Gtk::Entry *pathEntry);
+  Browser(Gtk::Window *Parent, std::string basePath, Browser *&currentBrowser, Browser *remoteBrowser, Gtk::Entry *pathEntry);
 
   /**
    * Current state of the filewatcher
@@ -43,6 +43,11 @@ public:
    * Current Path of the Filebrowser
   */
   std::filesystem::path CurrentPath;
+
+  /**
+   * Pointer to the "other" Browser
+   */
+  Browser *RemoteBrowser;
 
   class ModelColumns : public Gtk::TreeModel::ColumnRecord {
   public:
