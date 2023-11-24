@@ -12,6 +12,7 @@ set(SOURCE
   src/Components/Browser.cpp
   src/Components/Modal.cpp
   src/Components/Toolbar.cpp
+  src/Components/RunShell.cpp
 )
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

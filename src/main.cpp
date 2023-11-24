@@ -1,9 +1,11 @@
-#include "keyhandler.hpp"
+
+#include "gtkmm/box.h"
 #include <gtkmm.h>
 #include <iostream>
 #include <main.hpp>
 #include <Toolbar.hpp>
 #include <bridge.hpp>
+#include <keyhandler.hpp>
 #include <ctime>
 #include <filesystem>
 
@@ -17,6 +19,7 @@ MainWindow::MainWindow() : m_MainBox(Gtk::ORIENTATION_VERTICAL),
                            m_PathentryBox(Gtk::ORIENTATION_HORIZONTAL),
                            m_Returnbtn(),
                            m_Pathentry(),
+						   m_Runentry(&m_Pathentry),
                            m_SplitBox(Gtk::ORIENTATION_HORIZONTAL),
                            m_Browser_1(this, "/", CurrentBrowser, &m_Browser_2, &m_Pathentry),
                            m_Browser_2(this, "/", CurrentBrowser, &m_Browser_1, &m_Pathentry),
@@ -69,6 +72,7 @@ MainWindow::MainWindow() : m_MainBox(Gtk::ORIENTATION_VERTICAL),
   m_MainBox.pack_start(m_Toolbar, Gtk::PACK_SHRINK);
   m_MainBox.pack_start(m_PathentryBox, Gtk::PACK_SHRINK);
   m_MainBox.pack_start(m_SplitBox);
+  m_MainBox.pack_end(m_Runentry, Gtk::PACK_SHRINK);
   // MainBox //
 
   // Initial Navigate to the first Browser

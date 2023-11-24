@@ -2,8 +2,10 @@
 #define MAINWINDOW_H
 
 #include <gtkmm.h>
-#include <Toolbar.hpp>
-#include <Browser.hpp>
+
+#include "Toolbar.hpp"
+#include "Browser.hpp"
+#include "RunShell.hpp"
 
 class MainWindow : public Gtk::Window
 {
@@ -17,6 +19,7 @@ protected:
   Gtk::Box m_PathentryBox;
   Gtk::ToolButton m_Returnbtn;
   Gtk::Entry m_Pathentry;
+  RunShell m_Runentry;
   Gtk::Box m_SplitBox;
   Browser m_Browser_1;
   Browser m_Browser_2;
