@@ -5,6 +5,7 @@
 #include <fsutil.hpp>
 #include <Modal.hpp>
 #include <Browser.hpp>
+#include <system_error>
 #include <uritopath.h>
 #include <string>
 #include <iostream>
@@ -48,6 +49,37 @@ namespace bridge {
     try {
       fsutil::AddDir(location, dirname);
     } catch (fs::filesystem_error error) {
+	  ShowErrDial(Parent, error.what());
+    }
+  }
+
+  void wRenameObjects(Gtk::Window* Parent, Browser *browser, string location) {
+	try {
+	  string srcstr = ShowInputDial(Parent, "Source String");
+	  if (srcstr.empty()) {
+		return;
+	  }
+
+	  string deststr = ShowInputDial(Parent, "Replacement String");
+	  if (deststr.empty()) {
+		return;
+	  }
+
+	  fs::path origin_path(location);
+
+	  for (string name : browser->GetSelectedNames()) {
+		size_t pos = name.find(srcstr);
+		if (pos == string::npos) continue;
+
+		fs::path src_path = origin_path / name;
+		
+		name.replace(pos, srcstr.size(), deststr);
+
+		fs::path dest_path = origin_path / name;
+		
+		fsutil::MoveObject(src_path, dest_path, fsutil::SKIP);
+	  }
+	} catch (fs::filesystem_error error) {
 	  ShowErrDial(Parent, error.what());
     }
   }
@@ -133,6 +165,7 @@ namespace bridge {
       browser->ClearElements();
       browser->CurrentPath = directory;
       pathentry->set_text(browser->CurrentPath.c_str());
+	  pathentry->set_position(-1);
 
       // Disable Sorting before adding elements (otherwise the performance of the list suffers)
       browser->m_listStore->set_sort_column(Gtk::TreeSortable::DEFAULT_UNSORTED_COLUMN_ID, Gtk::SORT_ASCENDING);
@@ -310,20 +343,21 @@ namespace bridge {
 
 	// Take last space delimiter
 	size_t l_space_del = cur_text.rfind(' ');
-	l_space_del = l_space_del==string::npos?0:l_space_del;
 	// Take last path delimiter ('/')
 	size_t l_path_del = cur_text.rfind('/');
-	l_path_del = l_path_del==string::npos?0:l_path_del;
 	// Take last path key delimiter
 	size_t l_pkey_del = cur_text.rfind('%');
-	l_pkey_del = l_pkey_del==string::npos?0:l_pkey_del;
 
-	// Get the last delimiter
-	size_t l_del = max({l_space_del, l_path_del, l_pkey_del});
+	// Get the last delimiter pos or -1 if no delimiter is found
+	int l_del = max({
+		l_space_del==string::npos?-1:static_cast<int>(l_space_del),
+		l_path_del==string::npos?-1:static_cast<int>(l_path_del),
+		l_pkey_del==string::npos?-1:static_cast<int>(l_pkey_del)
+    });
 
 	// Split of the last word
 	string cur_attr
-	  = l_del==0 ? cur_text : cur_text.substr(l_del + 1);
+	  = l_del==-1 ? cur_text : cur_text.substr(l_del + 1);
 
 	// Don't apply if last char is space
 	if (cur_attr.empty()) return;

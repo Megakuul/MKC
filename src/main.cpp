@@ -104,6 +104,16 @@ void MainWindow::on_pathentry_activate() {
   bridge::wChangeDir(this, CurrentBrowser, &m_Pathentry, fs::path(m_Pathentry.get_text()));
 }
 
+bool MainWindow::on_pathentry_key_press(GdkEventKey* event) {
+  switch (event->keyval) {
+  case GDK_KEY_Tab:
+	bridge::wAutoComplete(&m_Pathentry, CurrentBrowser);
+	return true;
+  default:
+	return false;
+  }
+}
+
 int main(int argc, char *argv[])
 {
   auto app = Gtk::Application::create(argc, argv, "mkc.megakuul.ch");

@@ -1,16 +1,16 @@
 #include <gtkmm.h>
-#include <Toolbar.hpp>
-#include <Modal.hpp>
-#include <bridge.hpp>
-#include <Browser.hpp>
-#include "keyhandler.hpp"
-
 #include <iostream>
+
+#include "Toolbar.hpp"
+#include "Modal.hpp"
+#include "bridge.hpp"
+#include "Browser.hpp"
+#include "keyhandler.hpp"
 
 using namespace std;
 
 Toolbar::Toolbar(Gtk::Window *Parent, Browser *&CurrentBrowser)
-  : AFileBtn(), ADirBtn(), DObjBtn(), RObjBtn(), CObjBtn(), MObjBtn() {
+  : AFileBtn(), ADirBtn(), RnObjBtn(), DObjBtn(), RObjBtn(), CObjBtn(), MObjBtn() {
     set_name("toolbar");
     
     AFileBtn.set_stock_id(Gtk::Stock::FILE);
@@ -18,6 +18,9 @@ Toolbar::Toolbar(Gtk::Window *Parent, Browser *&CurrentBrowser)
 
     ADirBtn.set_stock_id(Gtk::Stock::DIRECTORY);
     ADirBtn.set_tooltip_text(ADD_DIR_KEY_LB);
+
+	RnObjBtn.set_stock_id(Gtk::Stock::CONVERT);
+	RnObjBtn.set_tooltip_text(RENAME_KEY_LB);
 
     DObjBtn.set_stock_id(Gtk::Stock::DELETE);
     DObjBtn.set_tooltip_text(DELETE_KEY_LB);
@@ -33,6 +36,7 @@ Toolbar::Toolbar(Gtk::Window *Parent, Browser *&CurrentBrowser)
     
     add(AFileBtn);
     add(ADirBtn);
+	add(RnObjBtn);
     add(DObjBtn);
     add(RObjBtn);
 	add(CObjBtn);
@@ -44,6 +48,9 @@ Toolbar::Toolbar(Gtk::Window *Parent, Browser *&CurrentBrowser)
     ADirBtn.signal_clicked().connect([Parent,&CurrentBrowser] {
 	  bridge::wAddDir(Parent, CurrentBrowser->CurrentPath);
     });
+	RnObjBtn.signal_clicked().connect([Parent,&CurrentBrowser] {
+	  bridge::wRenameObjects(Parent, CurrentBrowser, CurrentBrowser->CurrentPath);
+	});
     DObjBtn.signal_clicked().connect([Parent,&CurrentBrowser] {
 	  bridge::wDeleteObjects(Parent, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
     });

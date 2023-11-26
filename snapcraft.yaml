@@ -1,0 +1,22 @@
+name: mkc
+version: '1.0'
+summary: Megakuul Commander
+description: Simple filebrowser that is meant to speed up productivity
+confinement: strict
+base: core18
+
+parts:
+  mkc:
+    source: .
+    plugin: cmake
+    build-packages:
+      - g++
+      - make
+      - cmake
+      - pkg-config
+      - libgtkmm-3.0-dev
+      - zlib1g-dev
+    stage-packages:
+      - libgtkmm-3.0-1v5
+      - libstdc++6
+      - zlib1g

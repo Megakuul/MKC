@@ -11,6 +11,7 @@ public:
 protected:
   Gtk::ToolButton AFileBtn;
   Gtk::ToolButton ADirBtn;
+  Gtk::ToolButton RnObjBtn;
   Gtk::ToolButton DObjBtn;
   Gtk::ToolButton RObjBtn;
   Gtk::ToolButton CObjBtn;

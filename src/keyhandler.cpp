@@ -22,6 +22,9 @@ bool HandleKeyPress(
 	case ADD_DIR_KEY:
 	  bridge::wAddDir(Parent, CurrentBrowser->CurrentPath);
 	  break;
+	case RENAME_KEY:
+	  bridge::wRenameObjects(Parent, CurrentBrowser, CurrentBrowser->CurrentPath);
+	  break;
 	case DELETE_KEY:
 		bridge::wDeleteObjects(Parent, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
 	  break;
@@ -67,6 +70,7 @@ bool HandleKeyPress(
 	  Parent->set_focus(*Runentry);
 	  break;
 	}	
-  }
+  } else if (event->keyval == REFRESH_KEY)
+	bridge::wChangeDir(Parent, CurrentBrowser, Pathentry, CurrentBrowser->CurrentPath);
   return false;
 }

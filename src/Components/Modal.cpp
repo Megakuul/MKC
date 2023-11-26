@@ -1,12 +1,9 @@
-#include "fsutil.hpp"
-#include "gtkmm/checkbutton.h"
-#include "gtkmm/dialog.h"
-#include "gtkmm/enums.h"
-#include "gtkmm/messagedialog.h"
 #include <gtkmm.h>
-#include <Modal.hpp>
-#include <string>
-#include <iostream>
+
+#include "fsutil.hpp"
+#include "Modal.hpp"
+#include "string"
+#include "iostream"
 
 using namespace std;
 
@@ -17,6 +14,10 @@ string ShowInputDial(Gtk::Window *Parent, string label) {
   Gtk::Entry input;
   dial.get_message_area()->pack_start(input);
   input.show();
+
+  input.signal_activate().connect([&]() {
+	dial.response(Gtk::RESPONSE_OK);
+  });
 
   if (dial.run() == Gtk::RESPONSE_OK) {
 	return input.get_text();

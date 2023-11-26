@@ -11,12 +11,15 @@
 #define ADD_DIR_KEY GDK_KEY_2
 #define ADD_DIR_KEY_LB "CTRL + 2"
 
-#define DELETE_KEY GDK_KEY_3
-#define DELETE_KEY_LB "CTRL + 3"
+#define RENAME_KEY GDK_KEY_3
+#define RENAME_KEY_LB "CTRL + 3"
 
-#define RECOVER_KEY GDK_KEY_4
+#define DELETE_KEY GDK_KEY_4
+#define DELETE_KEY_LB "CTRL + 4"
+
+#define RECOVER_KEY GDK_KEY_5
 #define OPEN_RECOVER_KEY GDK_KEY_b
-#define RECOVER_KEY_LB "CTRL + 4\nCTRL + b (Open trash)"
+#define RECOVER_KEY_LB "CTRL + 5\nCTRL + b (Open trash)"
 
 #define COPY_KEY GDK_KEY_k
 #define COPY_KEY_LB "CTRL + k"
@@ -38,6 +41,8 @@
 
 #define RUNSHELL_KEY GDK_KEY_r
 #define RUNSHELL_KEY_LB "CTRL + r"
+
+#define REFRESH_KEY GDK_KEY_F5
 
 /**
  * Handles keypress on the main-interface

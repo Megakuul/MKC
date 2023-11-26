@@ -21,6 +21,11 @@ namespace bridge {
   void wAddDir(Gtk::Window* Parent, std::string location);
 
   /**
+   * Replaces the specified string in all selected objects with the specified replacement string
+   */
+  void wRenameObjects(Gtk::Window* Parent, Browser *browser, std::string location);
+
+  /**
    * Cleans all files from the provided list
    */
   void wDeleteObjects(Gtk::Window* Parent, std::string source, std::vector<std::string> objectnames);
