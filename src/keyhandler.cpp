@@ -1,7 +1,9 @@
 #include <gtkmm.h>
-#include <bridge.hpp>
-#include <keyhandler.hpp>
-#include <fsutil.hpp>
+
+#include "RunShell.hpp"
+#include "bridge.hpp"
+#include "keyhandler.hpp"
+#include "fsutil.hpp"
 
 bool HandleKeyPress(
     GdkEventKey* event,
@@ -9,7 +11,8 @@ bool HandleKeyPress(
 	Browser* CurrentBrowser,
 	Browser* Browser_1,
 	Browser* Browser_2,
-	Gtk::Entry* Pathentry) {
+	Gtk::Entry* Pathentry,
+    RunShell* Runentry) {
   
   if (event->state & GDK_CONTROL_MASK) {
 	switch (event->keyval) {
@@ -60,7 +63,10 @@ bool HandleKeyPress(
 	case RETURN_KEY:
 	  bridge::wChangeDir(Parent, CurrentBrowser, Pathentry, CurrentBrowser->CurrentPath.parent_path());
 	  break;
-	}
+	case RUNSHELL_KEY:
+	  Parent->set_focus(*Runentry);
+	  break;
+	}	
   }
   return false;
 }

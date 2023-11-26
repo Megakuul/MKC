@@ -2,9 +2,9 @@
 #define H_KEYHANDLER
 
 #include <gtkmm.h>
-#include <Browser.hpp>
+#include "Browser.hpp"
+#include "RunShell.hpp"
 
-// CTRL-KEYS
 #define ADD_FILE_KEY GDK_KEY_1
 #define ADD_FILE_KEY_LB "CTRL + 1"
 
@@ -35,7 +35,9 @@
 
 #define RETURN_KEY GDK_KEY_z
 #define RETURN_KEY_LB "CTRL + z"
-// CTRL-KEYS
+
+#define RUNSHELL_KEY GDK_KEY_r
+#define RUNSHELL_KEY_LB "CTRL + r"
 
 /**
  * Handles keypress on the main-interface
@@ -46,6 +48,7 @@ bool HandleKeyPress(
 	Browser* CurrentBrowser,
 	Browser* Browser_1,
 	Browser* Browser_2,
-	Gtk::Entry* Pathentry);
+	Gtk::Entry* Pathentry,
+    RunShell* Runentry);
 
 #endif

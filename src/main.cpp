@@ -1,25 +1,24 @@
-
-#include "gtkmm/box.h"
 #include <gtkmm.h>
 #include <iostream>
-#include <main.hpp>
-#include <Toolbar.hpp>
-#include <bridge.hpp>
-#include <keyhandler.hpp>
 #include <ctime>
 #include <filesystem>
+
+#include "main.hpp"
+#include "Toolbar.hpp"
+#include "bridge.hpp"
+#include "keyhandler.hpp"
 
 #define BACKGROUND_COLOR "rgba(107, 82, 82, 0.212)"
 
 using namespace std;
 namespace fs = filesystem;
 
-MainWindow::MainWindow() : m_MainBox(Gtk::ORIENTATION_VERTICAL),
+MainWindow::MainWindow(vector<Glib::ustring> RunCompletions) : m_MainBox(Gtk::ORIENTATION_VERTICAL),
                            m_Toolbar(this, CurrentBrowser),
                            m_PathentryBox(Gtk::ORIENTATION_HORIZONTAL),
                            m_Returnbtn(),
                            m_Pathentry(),
-						   m_Runentry(&m_Pathentry),
+						   m_Runentry(CurrentBrowser, RunCompletions),
                            m_SplitBox(Gtk::ORIENTATION_HORIZONTAL),
                            m_Browser_1(this, "/", CurrentBrowser, &m_Browser_2, &m_Pathentry),
                            m_Browser_2(this, "/", CurrentBrowser, &m_Browser_1, &m_Pathentry),
@@ -91,7 +90,7 @@ MainWindow::MainWindow() : m_MainBox(Gtk::ORIENTATION_VERTICAL),
 
 bool MainWindow::on_key_press(GdkEventKey* event)
 {  
-  return HandleKeyPress(event, this, CurrentBrowser, &m_Browser_1, &m_Browser_2, &m_Pathentry);
+  return HandleKeyPress(event, this, CurrentBrowser, &m_Browser_1, &m_Browser_2, &m_Pathentry, &m_Runentry);
 }
 
 void MainWindow::on_returnbtn_clicked() {
@@ -106,7 +105,17 @@ int main(int argc, char *argv[])
 {
   auto app = Gtk::Application::create(argc, argv, "mkc.megakuul.ch");
 
-  MainWindow window;
+  // TODO: Read additional completions from e.g. /etc/mkc/completions.conf
+  vector<Glib::ustring> run_completions = {
+	"zip ",
+	"unzip ",
+	"gzip ",
+	"gunzip ",
+	"tar -czvf ",
+	"tar -xzvf ",
+  };
+
+  MainWindow window(run_completions);
 
   GError *error = NULL;
   GdkPixbuf *favicon = gdk_pixbuf_new_from_file("/etc/mkc/favicon.png", &error);

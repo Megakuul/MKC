@@ -10,7 +10,7 @@
 class MainWindow : public Gtk::Window
 {
 public:
-  MainWindow();
+  MainWindow(std::vector<Glib::ustring> RunCompletions);
   Browser *CurrentBrowser;
 
 protected:
