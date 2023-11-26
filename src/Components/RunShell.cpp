@@ -6,6 +6,7 @@
 #include <mutex>
 
 #include "RunShell.hpp"
+#include "bridge.hpp"
 #include "gdk/gdkkeysyms.h"
 #include "gtkmm/treemodel.h"
 #include "gtkmm/treeviewcolumn.h"
@@ -101,7 +102,7 @@ void RunShell::on_shell_update() {
 bool RunShell::on_key_press(GdkEventKey* event) {
   switch (event->keyval) {
   case GDK_KEY_Tab:
-	complete_file();
+	bridge::wAutoComplete(this, current_browser);
 	insert_path();
 	return true;
   default:
@@ -129,67 +130,3 @@ void RunShell::insert_path() {
   set_position(-1);
 }
 
-void RunShell::complete_file() {
-  	string cur_text = get_text();
-
-	// Take last space delimiter
-	size_t l_space_del = cur_text.rfind(' ');
-	l_space_del = l_space_del==string::npos?0:l_space_del;
-	// Take last path delimiter ('/')
-	size_t l_path_del = cur_text.rfind('/');
-	l_path_del = l_path_del==string::npos?0:l_path_del;
-	// Take last path key delimiter
-	size_t l_pkey_del = cur_text.rfind(PATH_KEY);
-	l_pkey_del = l_pkey_del==string::npos?0:l_pkey_del;
-
-	// Get the last delimiter
-	size_t l_del = max({l_space_del, l_path_del, l_pkey_del});
-
-	// Split of the last word
-	string cur_attr
-	  = l_del==0 ? cur_text : cur_text.substr(l_del + 1);
-
-	// Don't apply if last char is space
-	if (cur_attr.empty()) return;
-
-	// Buffer with completions
-	vector<string> completions = vector<string>();
-
-	// Extract all values from the column and directly apply the first completor iteration
-	auto model = current_browser->get_model();
-	for (auto iter = model->children().begin(); iter != model->children().end(); ++iter) {
-	  Glib::ustring val = (*iter)[current_browser->m_columns.name];
-	  if (cur_attr[0] == val[0]) completions.push_back(val);
-	}
-
-	size_t i = 0;
-	// Iterate over the cur_attr to extract the matching completions
-	while (1) {
-	  if (completions.size() == 0) {
-		// No completion found
-	    return;
-	  } else if (completions.size() == 1) {
-		// One completion found, insert new text
-		cur_text.resize(cur_text.size()-cur_attr.size());
-		cur_text += completions[0];
-		set_text(cur_text);
-		// Set cursor to the end
-		set_position(-1);
-		return;
-	  }
-
-	  // Check if content of cur_attr is read and increment counter ifn
-	  if (i < cur_attr.length()) i++;
-	  else break;
-
-	  // Buffer of completions buffer
-	  vector<string> completions_buf = vector<string>();
-	  // Retrieve all completions that contain the next char
-	  for (string comp : completions) {
-		if (cur_attr[i] == comp[i])
-		  completions_buf.push_back(comp);
-	  }
-	  completions = completions_buf;
-	}
-	// Multiple completions found, do nothing
-}

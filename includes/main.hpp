@@ -27,6 +27,7 @@ protected:
   Gtk::ScrolledWindow m_Scrollable_2;
   bool on_key_press(GdkEventKey* event);
   void on_pathentry_activate();
+  bool on_pathentry_key_press(GdkEventKey* event);
   void on_returnbtn_clicked();
 };
 

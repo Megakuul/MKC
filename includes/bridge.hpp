@@ -3,8 +3,9 @@
 
 #include <string>
 #include <gtkmm.h>
-#include <Browser.hpp>
 #include <filesystem>
+
+#include "Browser.hpp"
 
 namespace bridge {
 
@@ -62,5 +63,10 @@ namespace bridge {
    * Fully compatible with Nautilus (Gnome) and Thunar (Xfce)
    */
   void wHandleGnomePaste(Gtk::Window* Parent, Browser* CurrentBrowser);
+
+  /**
+   * Autocompletes the last word on the provided entry based on the content of the currentbrowser
+   */
+  void wAutoComplete(Gtk::Entry *Entry, Browser *CurrentBrowser);
 }
 #endif

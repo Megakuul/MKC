@@ -304,4 +304,88 @@ namespace bridge {
 	  ShowErrDial(Parent, fserror.what());
 	}
   }
+
+  void wAutoComplete(Gtk::Entry *Entry, Browser *CurrentBrowser) {
+	string cur_text = Entry->get_text();
+
+	// Take last space delimiter
+	size_t l_space_del = cur_text.rfind(' ');
+	l_space_del = l_space_del==string::npos?0:l_space_del;
+	// Take last path delimiter ('/')
+	size_t l_path_del = cur_text.rfind('/');
+	l_path_del = l_path_del==string::npos?0:l_path_del;
+	// Take last path key delimiter
+	size_t l_pkey_del = cur_text.rfind('%');
+	l_pkey_del = l_pkey_del==string::npos?0:l_pkey_del;
+
+	// Get the last delimiter
+	size_t l_del = max({l_space_del, l_path_del, l_pkey_del});
+
+	// Split of the last word
+	string cur_attr
+	  = l_del==0 ? cur_text : cur_text.substr(l_del + 1);
+
+	// Don't apply if last char is space
+	if (cur_attr.empty()) return;
+
+	// Buffer with completions
+	vector<string> completions = vector<string>();
+
+	// Extract all values from the column and directly apply the first completor iteration
+	auto model = CurrentBrowser->get_model();
+	for (auto iter = model->children().begin(); iter != model->children().end(); ++iter) {
+	  Glib::ustring val = (*iter)[CurrentBrowser->m_columns.name];
+	  if (cur_attr[0] == val[0]) completions.push_back(val);
+	}
+
+	size_t i = 0;
+	// Iterate over the cur_attr to extract the matching completions
+	while (1) {
+	  if (completions.size() == 0) {
+		// No completion found
+	    return;
+	  } else if (completions.size() == 1) {
+		// One completion found, insert new text
+		cur_text.resize(cur_text.size()-cur_attr.size());
+		cur_text += completions[0];
+		Entry->set_text(cur_text);
+		// Set cursor to the end
+		Entry->set_position(-1);
+		return;
+	  }
+
+	  // Iterate further if the index is <= cur_attr
+	  if (i <= cur_attr.length()) i++;
+	  else break;
+
+	  // If cur_attr==i the str is out of bound, this case is catched here
+	  // Check if content of cur_attr is read and increment counter ifn
+	  if (i == cur_attr.length()) {
+		// Multiple completions found
+
+		// Find shortest completion
+		string shortest_completion = completions[0];
+		for (size_t j = 1; j < completions.size(); ++j) {
+		  if (completions[j].length() < shortest_completion.length()) {
+			shortest_completion = completions[j];
+		  }
+		}
+		// Clear the completion list
+		completions.clear();
+		// Add the shortest completion
+		completions.push_back(shortest_completion);
+		// Reiterate to apply the completion
+		i++; continue;
+	  }
+
+	  // Buffer of completions buffer
+	  vector<string> completions_buf = vector<string>();
+	  // Retrieve all completions that contain the next char
+	  for (string comp : completions) {
+		if (cur_attr[i] == comp[i])
+		  completions_buf.push_back(comp);
+	  }
+	  completions = completions_buf;
+	}
+  }
 }

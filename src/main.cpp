@@ -55,6 +55,9 @@ MainWindow::MainWindow(vector<Glib::ustring> RunCompletions) : m_MainBox(Gtk::OR
   m_Pathentry.signal_activate().connect(
     sigc::mem_fun(*this, &MainWindow::on_pathentry_activate)
   );
+  m_Pathentry.signal_key_press_event().connect(
+    sigc::mem_fun(*this, &MainWindow::on_pathentry_key_press)
+  );
   // Pathentry //
 
   // Splitbrowser //
