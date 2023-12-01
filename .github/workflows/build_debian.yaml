@@ -12,9 +12,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Install packaging tools
+      - name: Install packaging tools and makedependencies
         run: |
-          sudo apt install -y git dput gnupg
+          sudo apt install -y debhelper clang git dput gnupg libgtkmm-3.0-dev zlib1g-dev
 
       - name: Import GPG Key
         run: |
@@ -23,12 +23,12 @@ jobs:
 
       - name: Build package
         run: |
-          cd deb/source
-          bash build_source.sh
+          cd scripts
+          bash debian_build_source.sh
 
       - name: Upload package
         run: |
           commit_number=$(git rev-list --count HEAD)
-          cd debian/source
+          cd ..
           dput ppa:megakuul/mkc "mkc_$commit_number-1_source.changes"
 

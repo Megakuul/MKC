@@ -7,6 +7,15 @@ resources.c
 **.deb
 .cache/
 
+*.deb
+*.tar.gz
+*.dsc
+*.buildinfo
+*.diff.gz
+*.changes
+
+obj-x86_64-linux-gnu/**
+
 # Ignore Emacs backup and autosave files
 *~
 \#*\#

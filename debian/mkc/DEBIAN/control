@@ -1,0 +1,9 @@
+Package: mkc
+Version: 28-1
+Architecture: amd64
+Maintainer: Megakuul <megakuul@gmx.ch>
+Installed-Size: 305
+Depends: libatkmm-1.6-1v5 (>= 2.28.2), libc6 (>= 2.34), libgcc-s1 (>= 3.3.1), libgdk-pixbuf-2.0-0 (>= 2.22.0), libglib2.0-0 (>= 2.12.0), libglibmm-2.4-1v5 (>= 2.66.2), libgtk-3-0 (>= 3.0.0), libgtkmm-3.0-1v5 (>= 3.24.5), libsigc++-2.0-0v5 (>= 2.2.0), libstdc++6 (>= 12), zlib1g (>= 1:1.2.0)
+Section: utils
+Priority: optional
+Description: Megakuul Commander - Simple file browser designed to speed up productivity.

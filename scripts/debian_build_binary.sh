@@ -23,22 +23,24 @@ for ldep in "${libdeps[@]}"; do
 	fi
 done
 
+cd ..
+
 # Exit if a command fails
 set -e
 
 # Replace version number
 commit_number=$(git rev-list --count HEAD)
-sed -i "s/Version: .*/Version: $commit_number/" mkc/DEBIAN/control
+sed -i "s/Version: .*/Version: $commit_number/" DEBIAN/control
 
 # Build the project
 mkdir -p build
 cd build
-cmake ../../..
+cmake ..
 make
 # Install files into the virtual directory
-make DESTDIR="../mkc/DEBIAN" install
+make DESTDIR="../DEBIAN" install
 
+cd ../..
 # Build the .dep package
-cd ..
 dpkg-deb --build mkc
 

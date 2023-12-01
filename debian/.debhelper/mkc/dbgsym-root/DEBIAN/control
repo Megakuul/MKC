@@ -1,0 +1,13 @@
+Package: mkc-dbgsym
+Package-Type: ddeb
+Source: mkc
+Version: 28-1
+Auto-Built-Package: debug-symbols
+Architecture: amd64
+Maintainer: Megakuul <megakuul@gmx.ch>
+Installed-Size: 1185
+Depends: mkc (= 28-1)
+Section: debug
+Priority: optional
+Description: debug symbols for mkc
+Build-Ids: 5717d3daea320c582844a7dafe1445260614aa24
