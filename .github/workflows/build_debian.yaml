@@ -1,4 +1,4 @@
-name: Build and Upload Debian package
+name: Build and Upload Debian Package
 
 on:
   push:
@@ -12,22 +12,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Install packaging tools and makedependencies
+      - name: Install debian packaging tools and makedependencies
         run: |
           sudo apt update -y
           sudo apt install -y debhelper clang cmake git devscripts dput gnupg libgtkmm-3.0-dev zlib1g-dev
 
-      - name: Import GPG Key
+      - name: Import GPG key for debian package
         run: |
           gpg --batch --no-tty --import <(echo "${{ secrets.GPG_PRIVATE_KEY }}")
           gpg --batch --no-tty --import <(echo "${{ secrets.GPG_PUBLIC_KEY }}")
 
-      - name: Build package
+      - name: Build debian package
         run: |
           cd scripts
           bash debian_build_source.sh
 
-      - name: Upload package
+      - name: Upload debian package
         run: |
           commit_number=$(git rev-list --count HEAD)
           cd ..

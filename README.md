@@ -15,11 +15,16 @@ sudo apt install mkc
 
 For building the *.deb* package manually, look at [Build Debian binary](####binary-package).
 
+Remove the package with:
+```bash
+sudo apt remove mkc
+```
+
 #### Arch Linux
 
-Build from *PKGBUILD* with raw file:
+Build from *PKGBUILD*:
 ```bash
-mkdir mkc && cd mkc
+git clone https://github.com/megakuul/mkc.git 
 curl -o PKGBUILD https://raw.githubusercontent.com/Megakuul/MKC/main/arch/PKGBUILD
 makepkg -si
 ```
@@ -29,6 +34,11 @@ Or if the link is unavailable you can just download the full repository:
 git clone https://github.com/megakuul/mkc.git
 cd mkc/arch
 makepkg -si
+```
+
+Remove the package with:
+```bash
+sudo pacman -R mkc-git
 ```
 
 ## Build arch package

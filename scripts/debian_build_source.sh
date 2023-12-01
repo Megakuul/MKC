@@ -4,7 +4,7 @@ cd ..
 
 commit_number=$(git rev-list --count HEAD)
 current_version=$(dpkg-parsechangelog -S Version)
-new_version="$commit_number-1"
+new_version="${commit_number}-1"
 
 cd debian
 
@@ -24,5 +24,7 @@ dpkg-buildpackage -S
 
 rm -f "mkc_$commit_number.orig.tar.gz"
 
-gpg --verify "mkc_$new_version.dsc"
-gpg --verify "mkc_$new_version.changes"
+cd ..
+
+gpg --verify "mkc_${new_version}.dsc"
+gpg --verify "mkc_${new_version}.changes"

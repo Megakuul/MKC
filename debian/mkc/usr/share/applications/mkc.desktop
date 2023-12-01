@@ -1,7 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Megakuul Commander
-Comment=MKC
-Exec=/usr/bin/mkc
-Icon=/usr/share/mkc/favicon.png
-Terminal=false
