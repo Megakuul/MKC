@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
   MainWindow window(run_completions);
 
   GError *error = NULL;
-  GdkPixbuf *favicon = gdk_pixbuf_new_from_file("/etc/mkc/favicon.png", &error);
+  GdkPixbuf *favicon = gdk_pixbuf_new_from_file("/usr/share/mkc/favicon.png", &error);
   if (!favicon) {
 	cerr << "Error loading icon: " << error->message << endl;
 	g_error_free(error);

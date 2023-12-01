@@ -1,0 +1,31 @@
+pkgname=mkc-git
+pkgver() {
+    cd "$srcdir/mkc"
+    printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+pkgre1=1
+pkgdesc=Megakuul Commander
+Simple filebrowser that is meant to speed up productivity
+arch=('x86_64')
+url="https://github.com/Megakuul/MKC"
+license=('MIT')
+
+makedepends=('git', 'cmake', 'make')
+depends=('gtkmm3' 'zlib')
+
+source=("git+https://github.com/Megakuul/MKC.git")
+md5sums=("SKIP")
+
+build() {
+	cd "$srcdir/mkc"
+	mkdir -p build
+	cd build
+	cmake ..
+	make
+}
+
+package() {
+	cd "$srcdir/mkc/build"
+
+	make DESTDIR="$pkgdir/" install
+}

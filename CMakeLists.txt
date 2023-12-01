@@ -29,3 +29,7 @@ link_directories(${GTKMM_LIBRARY_DIRS})
 
 add_executable(${PROJECT_NAME} ${SOURCE})
 target_link_libraries(${PROJECT_NAME} ${GTKMM_LIBRARIES} ZLIB::ZLIB uritopath)
+
+install(TARGETS ${PROJECT_NAME} DESTINATION bin)
+install(FILES assets/favicon.png DESTINATION share/mkc)
+install(FILES assets/mkc.desktop DESTINATION share/applications)
