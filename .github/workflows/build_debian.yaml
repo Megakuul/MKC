@@ -60,11 +60,11 @@ jobs:
       - name: Build debian package
         run: |
           cd scripts
-          bash debian_build_source.sh
+          bash debian_build_source.sh megakuulr@gmail.com
 
       - name: Upload debian package
         run: |
           commit_number=$(git rev-list --count HEAD)
           cd ..
-          dput ppa:megakuul/mkc "mkc_$commit_number_source.changes.asc"
+          dput ppa:megakuul/mkc "mkc_${commit_number}_source.changes.asc"
 
