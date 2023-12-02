@@ -28,14 +28,14 @@ jobs:
           sudo apt update -y
           sudo apt install -y debhelper clang cmake git devscripts dput gnupg libgtkmm-3.0-dev zlib1g-dev
 
-      - name: Build debian package
-        run: |
-          cd scripts
-          bash debian_build_source.sh megakuulr@gmail.com
-
-      - name: Upload debian package
+      - name: Build and upload package
         run: |
           commit_number=$(git rev-list --count HEAD)
+          echo $commit_number
+          
+          cd scripts
+          bash debian_build_source.sh commit_number megakuulr@gmail.com
+          
           cd ..
           dput ppa:megakuul/mkc "mkc_${commit_number}_source.changes.asc"
 

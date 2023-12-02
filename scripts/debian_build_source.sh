@@ -2,8 +2,7 @@
 
 cd ..
 
-commit_number=$(git rev-list --count HEAD)
-echo "${commit_number}"
+commit_number="$1"
 
 echo "Generating '.orig.tar.gz' file from source..."
 tar -czvf "mkc_$commit_number.orig.tar.gz" CMakeLists.txt src/ includes/ assets/
@@ -11,16 +10,14 @@ tar -czvf "mkc_$commit_number.orig.tar.gz" CMakeLists.txt src/ includes/ assets/
 set -e
 
 # Check if GPG email is provided
-if [ "$#" -eq 1 ]; then
-    GPG_EMAIL="$1"
+if [ "$#" -eq 2 ]; then
+    GPG_EMAIL="$2"
     echo "GPG Email provided: $GPG_EMAIL. Building and signing source package..."
     dpkg-buildpackage -S -uc -us
 
     echo "Signing source package..."
     DSC_FILE="mkc_${commit_number}.dsc"
     CHANGES_FILE="mkc_${commit_number}_source.changes"
-	echo $DSC_FILE
-	echo $CHANGES_FILE
 
 	gpg --batch --yes --local-user $GPG_EMAIL --clearsign "$DSC_FILE"
 	gpg --batch --yes --local-user $GPG_EMAIL --clearsign "$CHANGES_FILE"
