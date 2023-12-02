@@ -17,6 +17,13 @@ jobs:
           sudo apt update -y
           sudo apt install -y debhelper clang cmake git devscripts dput gnupg libgtkmm-3.0-dev zlib1g-dev
 
+      - name: Configure GPG
+        run: |
+          mkdir ~/.gnupg
+          echo "allow-loopback-pinentry" > ~/.gnupg/gpg-agent.conf
+          gpgconf --kill gpg-agent
+          gpgconf --launch gpg-agent
+
       - name: Import GPG key for debian package
         run: |
           gpg --batch --pinentry-mode loopback --no-tty --import <(echo "${{ secrets.GPG_PRIVATE_KEY }}")
