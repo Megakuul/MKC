@@ -53,18 +53,18 @@ jobs:
           gpg --batch --yes --clearsign --default-key "megakuulr@gmail.com" testfile.txt
           gpg --verify testfile.txt.asc
 
-      - name: Clear-Sign Using Email
+      - name: Clear-Sign Using Email w username
         continue-on-error: true
         run: |
           echo "Test file for GPG signing" > testfile.txt
           gpg --batch --yes --clearsign --default-key "Linus Moser megakuulr@gmail.com" testfile.txt
           gpg --verify testfile.txt.asc
           
-      - name: Clear-Sign Using Email
+      - name: Clear-Sign Using Email but key
         continue-on-error: true
         run: |
           echo "Test file for GPG signing" > testfile.txt
-          gpg --batch --yes --clearsign --default-key "Linus Moser <megakuulr@gmail.com>" testfile.txt
+          gpg --batch --yes --clearsign --default-key "Linus Moser c396074ccd401c28a5e2d7500f7ccf3f45d9947a" testfile.txt
           gpg --verify testfile.txt.asc
 
 
