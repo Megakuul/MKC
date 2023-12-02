@@ -37,5 +37,5 @@ jobs:
         run: |
           version=$(dpkg-parsechangelog -S Version)
           cd ..
-          dput ppa:megakuul/mkc "mkc_${version}_source.changes.asc"
+          dput ppa:megakuul/mkc "mkc_${version}_source.changes"
 

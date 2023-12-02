@@ -28,11 +28,12 @@ if [ "$#" -eq 1 ]; then
     gpg --verify "${DSC_FILE}.asc"
     gpg --verify "${CHANGES_FILE}.asc"
 
-    echo "Signed '.dsc' can be found at ${DSC_FILE}.asc"
-    echo "Signed '.changes' can be found at ${CHANGES_FILE}.asc"
+    echo "Signature for '.dsc' file can be found at ${DSC_FILE}.asc"
+    echo "Signature for '.changes' file can be found at ${CHANGES_FILE}.asc"
 else
     echo "No GPG Email provided. Building source package without signing..."
     dpkg-buildpackage -S -uc -us
+	cd ..
 fi
 
 rm -f "mkc_$version.orig.tar.gz"
