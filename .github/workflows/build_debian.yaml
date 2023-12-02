@@ -14,7 +14,7 @@ jobs:
 
       - name: Install debian packaging tools and makedependencies
         run: |
-          sudo apt update -y
+          sudo apt update -y && sudo apt upgrade -y
           sudo apt install -y debhelper clang cmake git devscripts dput gnupg libgtkmm-3.0-dev zlib1g-dev
 
           
@@ -47,45 +47,10 @@ jobs:
           gpg --list-secret-keys
 
       - name: Clear-Sign Using Email
-        continue-on-error: true
         run: |
           echo "Test file for GPG signing" > testfile.txt
           gpg --batch --yes --clearsign --default-key "megakuulr@gmail.com" testfile.txt
           gpg --verify testfile.txt.asc
-
-      - name: Clear-Sign Using Email w username
-        continue-on-error: true
-        run: |
-          echo "Test file for GPG signing" > testfile.txt
-          gpg --batch --yes --clearsign --default-key "Linus Moser megakuulr@gmail.com" testfile.txt
-          gpg --verify testfile.txt.asc
-          
-      - name: Clear-Sign Using Email but key
-        continue-on-error: true
-        run: |
-          echo "Test file for GPG signing" > testfile.txt
-          gpg --batch --yes --clearsign --default-key "Linus Moser c396074ccd401c28a5e2d7500f7ccf3f45d9947a" testfile.txt
-          gpg --verify testfile.txt.asc
-
-
-      - name: Clear-Sign Using Key ID
-        continue-on-error: true
-        run: |
-          echo "Test file for GPG signing" > testfile.txt
-          gpg --batch --yes --clearsign --default-key c396074ccd401c28a5e2d7500f7ccf3f45d9947a testfile.txt
-
-      - name: Detached Signature Using Key ID
-        continue-on-error: true
-        run: |
-          echo "Test file for GPG signing" > testfile.txt
-          gpg --batch --yes --detach-sign --default-key c396074ccd401c28a5e2d7500f7ccf3f45d9947a testfile.txt
-
-      - name: Sign and Encrypt for Self
-        continue-on-error: true
-        run: |
-          echo "Test file for GPG signing" > testfile.txt
-          gpg --batch --yes --sign --encrypt --recipient c396074ccd401c28a5e2d7500f7ccf3f45d9947a testfile.txt
-
 
       - name: Build debian package
         run: |
