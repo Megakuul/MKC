@@ -30,12 +30,12 @@ jobs:
 
       - name: Build and upload package
         run: |
-          commit_number=$(git rev-list --count HEAD)
-          echo $commit_number
-          
           cd scripts
-          bash debian_build_source.sh commit_number megakuulr@gmail.com
-          
+          bash debian_build_source.sh megakuulr@gmail.com
+
+      - name: Upload debian package
+        run: |
+          version=$(dpkg-parsechangelog -S Version)
           cd ..
-          dput ppa:megakuul/mkc "mkc_${commit_number}_source.changes.asc"
+          dput ppa:megakuul/mkc "mkc_${version}_source.changes.asc"
 

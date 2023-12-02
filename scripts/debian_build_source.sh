@@ -2,22 +2,23 @@
 
 cd ..
 
-commit_number="$1"
+version=$(dpkg-parsechangelog -S Version)
+echo "${version}"
 
 echo "Generating '.orig.tar.gz' file from source..."
-tar -czvf "mkc_$commit_number.orig.tar.gz" CMakeLists.txt src/ includes/ assets/
+tar -czvf "mkc_$version.orig.tar.gz" CMakeLists.txt src/ includes/ assets/
 
 set -e
 
 # Check if GPG email is provided
-if [ "$#" -eq 2 ]; then
-    GPG_EMAIL="$2"
+if [ "$#" -eq 1 ]; then
+    GPG_EMAIL="$1"
     echo "GPG Email provided: $GPG_EMAIL. Building and signing source package..."
     dpkg-buildpackage -S -uc -us
 
     echo "Signing source package..."
-    DSC_FILE="mkc_${commit_number}.dsc"
-    CHANGES_FILE="mkc_${commit_number}_source.changes"
+    DSC_FILE="mkc_${version}.dsc"
+    CHANGES_FILE="mkc_${version}_source.changes"
 
 	gpg --batch --yes --local-user $GPG_EMAIL --clearsign "$DSC_FILE"
 	gpg --batch --yes --local-user $GPG_EMAIL --clearsign "$CHANGES_FILE"
@@ -32,6 +33,6 @@ else
     dpkg-buildpackage -S -uc -us
 fi
 
-rm -f "mkc_$commit_number.orig.tar.gz"
+rm -f "mkc_$version.orig.tar.gz"
 
 cd ..
