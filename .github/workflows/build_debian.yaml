@@ -51,9 +51,9 @@ jobs:
           cd scripts
           bash debian_build_source.sh
 
+
       - name: Upload debian package
         run: |
-          commit_number=$(git rev-list --count HEAD)
           cd ..
-          dput ppa:megakuul/mkc "mkc_$commit_number-1_source.changes"
+          dput ppa:megakuul/mkc "mkc_source.changes"
 
