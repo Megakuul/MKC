@@ -28,35 +28,6 @@ jobs:
           sudo apt update -y
           sudo apt install -y debhelper clang cmake git devscripts dput gnupg libgtkmm-3.0-dev zlib1g-dev
 
-          
-      - name: Import GPG key for debian package
-        run: |
-          echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 -d | gpg --batch --import
-
-      - name: Configure GPG
-        run: |
-          # Create directory for gpg configuration
-          mkdir -p ~/.gnupg
-          chmod 700 ~/.gnupg
-
-          # Trust the imported key
-          echo -e "trust\n5\ny\nquit\n" > gpg-trust-script
-          gpg --batch --yes --command-fd 0 --edit-key megakuulr@gmail.com < gpg-trust-script
-          
-          # Settings to omit the pinentry, because it requires a terminal service (tty)
-          echo "allow-loopback-pinentry" > ~/.gnupg/gpg-agent.conf
-          echo "use-agent" > ~/.gnupg/gpg.conf
-          echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
-          # Setting permissions
-          chmod 600 ~/.gnupg/*
-
-          gpg-connect-agent /bye
-          gpgconf --reload gpg-agent
-
-          # Display debug information
-          gpg --version
-          gpg --list-secret-keys
-
       - name: Build debian package
         run: |
           cd scripts
