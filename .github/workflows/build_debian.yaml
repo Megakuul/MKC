@@ -25,10 +25,6 @@ jobs:
           
           gpg --batch --import <(echo "${{ secrets.GPG_PRIVATE_KEY }}")
           gpg --list-secret-keys
-          gpg --command-fd 0 --edit-key "Linus Moser <megakuulr@gmail.com>" trust |
-          5
-          y
-          save
 
       - name: Configure GPG
         run: |
@@ -40,7 +36,6 @@ jobs:
           gpg --version
           echo "use-agent" > ~/.gnupg/gpg.conf
           echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
-          chmod 700 ~/.gnupg
           chmod 600 ~/.gnupg/*
 
 
