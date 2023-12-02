@@ -17,19 +17,23 @@ jobs:
           sudo apt update -y
           sudo apt install -y debhelper clang cmake git devscripts dput gnupg libgtkmm-3.0-dev zlib1g-dev
 
-      - name: Configure GPG
-        run: |
-          mkdir -p ~/.gnupg
-          echo "allow-loopback-pinentry" > ~/.gnupg/gpg-agent.conf
-          echo "use-agent\npinentry-mode loopback" > ~/.gnupg/gpg.conf
-          echo "no-tty" >> ~/.gnupg/gpg.conf
-          chmod 700 ~/.gnupg
-          chmod 600 ~/.gnupg/*
-
+          
       - name: Import GPG key for debian package
         run: |
           gpg --batch --pinentry-mode loopback --no-tty --import <(echo "${{ secrets.GPG_PRIVATE_KEY }}")
           gpg --batch --pinentry-mode loopback --no-tty --import <(echo "${{ secrets.GPG_PUBLIC_KEY }}")
+
+      - name: Configure GPG
+        run: |
+          # Settings to omit the pinentry, because it requires a terminal service (doesn't work with headless actionrunner)
+          mkdir -p ~/.gnupg
+          echo "allow-loopback-pinentry" > ~/.gnupg/gpg-agent.conf
+
+          gpg --version
+          echo "use-agent" > ~/.gnupg/gpg.conf
+          echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
+          chmod 700 ~/.gnupg
+          chmod 600 ~/.gnupg/*
 
       - name: Build debian package
         run: |
