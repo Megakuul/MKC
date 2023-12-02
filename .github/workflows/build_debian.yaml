@@ -20,8 +20,8 @@ jobs:
           
       - name: Import GPG key for debian package
         run: |
-          gpg --batch --pinentry-mode loopback --no-tty --import <(echo "${{ secrets.GPG_PRIVATE_KEY }}")
-          gpg --batch --pinentry-mode loopback --no-tty --import <(echo "${{ secrets.GPG_PUBLIC_KEY }}")
+          gpg --batch --import <(echo "${{ secrets.GPG_PRIVATE_KEY }}")
+          gpg --list-keys
 
       - name: Configure GPG
         run: |
