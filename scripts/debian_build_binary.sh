@@ -25,12 +25,7 @@ done
 
 cd ..
 
-# Exit if a command fails
 set -e
-
-# Replace version number
-commit_number=$(git rev-list --count HEAD)
-sed -i "s/Version: .*/Version: $commit_number/" DEBIAN/control
 
 # Build the project
 mkdir -p build

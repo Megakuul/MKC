@@ -41,6 +41,26 @@ Remove the package with:
 sudo pacman -R mkc-git
 ```
 
+## Update model
+
+The Megakuul Commander package uses a very simple continuous update model. The version of the software is determined by the commit-number on the *main* branch.
+
+There is no "unreleased", "beta" or "preview" version, the newest version is always marked as "stable". If issues occur, they are fixed in the latest version -> Old versions are not maintained or changed in any way.
+
+On *debian* based distros, you can just update the package like regular packages:
+```bash
+sudo apt update -y
+sudo apt upgrade -y
+```
+
+For *arch* distros, you must again fetch the install script and execute it:
+```bash
+git clone https://github.com/megakuul/mkc.git 
+curl -o PKGBUILD https://raw.githubusercontent.com/Megakuul/MKC/main/arch/PKGBUILD
+makepkg -si
+```
+This is because the package is currently not available on the *AUR* repo.
+
 ## Build arch package
 
 The arch package does not need to be built as it is not part of a public repository. In the *arch* directory you will find the *PKGBUILD* script that is used to install the software.

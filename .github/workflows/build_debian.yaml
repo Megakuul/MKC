@@ -19,9 +19,14 @@ jobs:
 
       - name: Configure GPG
         run: |
-          echo "allow-loopback-pinentry" >> /home/runner/.gnupg/gpg-agent.conf
+          ls -al /
+          ls -al ~/
+          mkdir ~/.gnupg
+          echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
           gpgconf --kill gpg-agent
           gpgconf --launch gpg-agent
+          GPG_TTY=$(tty)
+          export GPG_TTY
 
       - name: Import GPG key for debian package
         run: |
