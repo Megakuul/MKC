@@ -22,7 +22,6 @@ jobs:
         run: |
           mkdir -p ~/.gnupg
           chmod 700 ~/.gnupg
-          chmod 600 ~/.gnupg/*
           
           gpg --batch --import <(echo "${{ secrets.GPG_PRIVATE_KEY }}")
           gpg --list-secret-keys
