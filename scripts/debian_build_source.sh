@@ -3,7 +3,7 @@
 cd ..
 
 commit_number=$(git rev-list --count HEAD)
-new_version="${commit_number}"
+echo "${commit_number}"
 
 echo "Generating '.orig.tar.gz' file from source..."
 tar -czvf "mkc_$commit_number.orig.tar.gz" CMakeLists.txt src/ includes/ assets/
@@ -17,11 +17,13 @@ if [ "$#" -eq 1 ]; then
     dpkg-buildpackage -S -uc -us
 
     echo "Signing source package..."
-    DSC_FILE="mkc_${new_version}.dsc"
-    CHANGES_FILE="mkc_${new_version}_source.changes"
+    DSC_FILE="mkc_${commit_number}.dsc"
+    CHANGES_FILE="mkc_${commit_number}_source.changes"
+	echo $DSC_FILE
+	echo $CHANGES_FILE
 
-	gpg --batch --yes --local-user "$GPG_EMAIL" --clearsign "$DSC_FILE"
-	gpg --batch --yes --local-user "$GPG_EMAIL" --clearsign "$CHANGES_FILE"
+	gpg --batch --yes --local-user $GPG_EMAIL --clearsign "$DSC_FILE"
+	gpg --batch --yes --local-user $GPG_EMAIL --clearsign "$CHANGES_FILE"
 
     gpg --verify "${DSC_FILE}.asc"
     gpg --verify "${CHANGES_FILE}.asc"
