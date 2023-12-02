@@ -26,5 +26,5 @@ rm -f "mkc_$commit_number.orig.tar.gz"
 
 cd ..
 
-gpg --verify "mkc_${new_version}.dsc"
-gpg --verify "mkc_${new_version}.changes"
+gpg --verify --batch --pinentry-mode --no-tty "mkc_${new_version}.dsc"
+gpg --verify --batch --pinentry-mode --no-tty "mkc_${new_version}.changes"
