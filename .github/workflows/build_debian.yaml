@@ -20,13 +20,21 @@ jobs:
           
       - name: Import GPG key for debian package
         run: |
+          mkdir -p ~/.gnupg
+          chmod 700 ~/.gnupg
+          chmod 600 ~/.gnupg/*
+          
           gpg --batch --import <(echo "${{ secrets.GPG_PRIVATE_KEY }}")
-          gpg --list-keys
+          gpg --list-secret-keys
+          gpg --command-fd 0 --edit-key "Linus Moser <megakuulr@gmail.com>" trust |
+          5
+          y
+          save
 
       - name: Configure GPG
         run: |
           # Settings to omit the pinentry, because it requires a terminal service (doesn't work with headless actionrunner)
-          mkdir -p ~/.gnupg
+          
           echo "allow-loopback-pinentry" > ~/.gnupg/gpg-agent.conf
 
           # Display version, in case of problems with the pinentry-skip this can be helpful to debug
@@ -35,6 +43,7 @@ jobs:
           echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
           chmod 700 ~/.gnupg
           chmod 600 ~/.gnupg/*
+
 
       - name: Build debian package
         run: |
