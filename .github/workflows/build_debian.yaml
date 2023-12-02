@@ -46,14 +46,55 @@ jobs:
           gpg --version
           gpg --list-secret-keys
 
+      - name: Clear-Sign Using Email
+        continue-on-error: true
+        run: |
+          echo "Test file for GPG signing" > testfile.txt
+          gpg --batch --yes --clearsign --default-key "megakuulr@gmail.com" testfile.txt
+          gpg --verify testfile.txt.asc
+
+      - name: Clear-Sign Using Email
+        continue-on-error: true
+        run: |
+          echo "Test file for GPG signing" > testfile.txt
+          gpg --batch --yes --clearsign --default-key "Linus Moser megakuulr@gmail.com" testfile.txt
+          gpg --verify testfile.txt.asc
+          
+      - name: Clear-Sign Using Email
+        continue-on-error: true
+        run: |
+          echo "Test file for GPG signing" > testfile.txt
+          gpg --batch --yes --clearsign --default-key "Linus Moser <megakuulr@gmail.com>" testfile.txt
+          gpg --verify testfile.txt.asc
+
+
+      - name: Clear-Sign Using Key ID
+        continue-on-error: true
+        run: |
+          echo "Test file for GPG signing" > testfile.txt
+          gpg --batch --yes --clearsign --default-key c396074ccd401c28a5e2d7500f7ccf3f45d9947a testfile.txt
+
+      - name: Detached Signature Using Key ID
+        continue-on-error: true
+        run: |
+          echo "Test file for GPG signing" > testfile.txt
+          gpg --batch --yes --detach-sign --default-key c396074ccd401c28a5e2d7500f7ccf3f45d9947a testfile.txt
+
+      - name: Sign and Encrypt for Self
+        continue-on-error: true
+        run: |
+          echo "Test file for GPG signing" > testfile.txt
+          gpg --batch --yes --sign --encrypt --recipient c396074ccd401c28a5e2d7500f7ccf3f45d9947a testfile.txt
+
+
       - name: Build debian package
         run: |
           cd scripts
           bash debian_build_source.sh
 
-
       - name: Upload debian package
         run: |
+          commit_number=$(git rev-list --count HEAD)
           cd ..
-          dput ppa:megakuul/mkc "mkc_source.changes"
+          dput ppa:megakuul/mkc "mkc_$commit_number_source.changes"
 
