@@ -19,6 +19,8 @@ jobs:
           echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 -d | gpg --batch --import
           echo "Salat" > test.txt
           gpg --batch --yes --sign test.txt
+          gpp --verify test.txt
+          echo "Ok works"
           
 
       - name: Install debian packaging tools and makedependencies
@@ -29,7 +31,7 @@ jobs:
           
       - name: Import GPG key for debian package
         run: |
-          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 -d | gpg --batch --import
 
       - name: Configure GPG
         run: |
