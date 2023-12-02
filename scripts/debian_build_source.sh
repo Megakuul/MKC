@@ -13,7 +13,7 @@ set -e
 export DEBEMAIL="megakuulr@gmail.com"
 export DEBFULLNAME="Linus Moser"
 
-dpkg-buildpackage -S -kmegakuulr@gmail.com
+dpkg-buildpackage -S
 
 rm -f "mkc_$commit_number.orig.tar.gz"
 
