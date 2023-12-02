@@ -16,6 +16,8 @@ if [ "$#" -eq 1 ]; then
     echo "GPG Email provided: $GPG_EMAIL. Building and signing source package..."
     dpkg-buildpackage -S -uc -us
 
+	cd ..
+
     echo "Signing source package..."
     DSC_FILE="mkc_${version}.dsc"
     CHANGES_FILE="mkc_${version}_source.changes"
@@ -34,5 +36,3 @@ else
 fi
 
 rm -f "mkc_$version.orig.tar.gz"
-
-cd ..
