@@ -9,11 +9,7 @@ tar -czvf "mkc_$commit_number.orig.tar.gz" CMakeLists.txt src/ includes/ assets/
 
 set -e
 
-# Maintainer-information (set to the owner of the PPA)
-export DEBEMAIL="megakuulr@gmail.com"
-export DEBFULLNAME="Linus Moser"
-
-dpkg-buildpackage -S -kmegakuulr@gmail.com
+dpkg-buildpackage -S
 
 rm -f "mkc_$commit_number.orig.tar.gz"
 

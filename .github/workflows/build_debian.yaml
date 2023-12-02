@@ -18,7 +18,7 @@ jobs:
           sudo apt install gnupg
           echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 -d | gpg --batch --import
           echo "Salat" > test.txt
-          gpg --batch --yes --clearsign test.txt
+          gpg --batch --yes --local-user megakuulr@gmail.com --clearsign test.txt
           gpg --verify test.txt.asc
           echo "Ok works"
           
