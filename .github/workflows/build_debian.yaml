@@ -24,6 +24,10 @@ jobs:
           chmod 700 ~/.gnupg
           
           gpg --batch --import <(echo "${{ secrets.GPG_PRIVATE_KEY }}")
+          echo -e "trust\n5\ny\nquit\n" > gpg-trust-script
+
+          # Execute the batch script with GPG
+          gpg --batch --yes --command-fd 0 --edit-key megakuulr@gmail.com < gpg-trust-script
           gpg --list-secret-keys
 
       - name: Configure GPG
