@@ -18,8 +18,8 @@ jobs:
           sudo apt install gnupg
           echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 -d | gpg --batch --import
           echo "Salat" > test.txt
-          gpg --batch --yes --sign test.txt
-          gpg --verify test.txt
+          gpg --batch --yes --clearsign test.txt
+          gpg --verify test.txt.asc
           echo "Ok works"
           
 
@@ -66,5 +66,5 @@ jobs:
         run: |
           commit_number=$(git rev-list --count HEAD)
           cd ..
-          dput ppa:megakuul/mkc "mkc_$commit_number_source.changes"
+          dput ppa:megakuul/mkc "mkc_$commit_number_source.changes.asc"
 
