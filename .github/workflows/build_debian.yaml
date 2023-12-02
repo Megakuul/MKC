@@ -29,6 +29,7 @@ jobs:
           mkdir -p ~/.gnupg
           echo "allow-loopback-pinentry" > ~/.gnupg/gpg-agent.conf
 
+          # Display version, in case of problems with the pinentry-skip this can be helpful to debug
           gpg --version
           echo "use-agent" > ~/.gnupg/gpg.conf
           echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
