@@ -21,7 +21,7 @@ jobs:
       - name: Import GPG Key
         run: |
           echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 -d | gpg --batch --import
-          gpg --list-secure-keys
+          gpg --list-secret-keys
 
       - name: Build and upload package
         run: |
