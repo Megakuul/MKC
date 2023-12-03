@@ -72,17 +72,26 @@ jobs:
           dput ppa:megakuul/mkc "mkc_${version}_source.changes"
 
       - name: Delete previous 'latest' Debian release package
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if gh release view latest; then
             gh release delete latest
           fi
       - name: Create 'latest' Debian release package
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd MKC
           version=$(dpkg-parsechangelog -S Version)
           gh release create latest --title "Latest Release (Version: $version)"
 
       - name: Upload 'latest' Debian release package
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release upload latest ./MKC.deb
 
