@@ -38,17 +38,17 @@ jobs:
           ls -al .
           
           # This is a workaround, as upload-artifact does not support relativ paths
-          mkdir -p $HOME/tmp_store/
-          cp ../*.deb ../*.changes ../*.dsc ../*.buildinfo ../*.tar.gz $HOME/tmp_store/
-          cp -r ../MKC $HOME/tmp_store/
+          mkdir -p /tmp/artifacts/
+          cp ../*.deb ../*.changes ../*.dsc ../*.buildinfo ../*.tar.gz /tmp/artifacts/
+          cp -r ../MKC /tmp/artifacts/
 
-          ls -al $HOME/tmp_store/
+          ls -al /tmp/artifacts/
           
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: package
-          path: $HOME/tmp_store
+          path: /tmp/artifacts/
 
   upload-packages:
     needs: build-packages
