@@ -11,22 +11,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
-      - name: Test
-        run: |
-          sudo apt update -y
-          sudo apt install gnupg
-          echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 -d | gpg --batch --import
-          echo "Salat" > test.txt
-          gpg --batch --yes --local-user megakuulr@gmail.com --clearsign test.txt
-          gpg --verify test.txt.asc
-          echo "Ok works"
           
 
       - name: Install debian packaging tools and makedependencies
         run: |
           sudo apt update -y
           sudo apt install -y debhelper clang cmake git devscripts dput gnupg libgtkmm-3.0-dev zlib1g-dev
+
+      - name: Import GPG Key
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 -d | gpg --batch --import
+          gpg --list-secure-keys
 
       - name: Build and upload package
         run: |
@@ -37,5 +32,6 @@ jobs:
         run: |
           version=$(dpkg-parsechangelog -S Version)
           cd ..
+          ls -l
           dput ppa:megakuul/mkc "mkc_${version}_source.changes"
 
