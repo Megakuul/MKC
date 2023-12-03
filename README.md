@@ -22,8 +22,8 @@ sudo apt remove mkc
 
 Build from *.deb* release:
 ```bash
-wget https://github.com/megakuul/mkc/releases/download/latest/mkc.deb
-sudo dpkg -i mkc.deb
+wget https://github.com/megakuul/mkc/releases/download/latest/MKC.deb
+sudo dpkg -i MKC.deb
 ```
 
 Remove the package with:
@@ -66,8 +66,8 @@ sudo apt upgrade -y
 
 On *debian*, you must re-download the package and reinstall it:
 ```bash
-wget https://github.com/megakuul/mkc/releases/download/latest/mkc.deb
-sudo dpkg -i mkc.deb
+wget https://github.com/megakuul/mkc/releases/download/latest/MKC.deb
+sudo dpkg -i MKC.deb
 ```
 
 For *arch* distros, you must again fetch the install script and execute it:
@@ -101,12 +101,12 @@ The script will tell you if you need to install a dev/make-dependency.
 
 Versioning is handled through *git*, the current git commit is taken as version.
 
-After successfull build there should be a file called *mkc.deb*.
+After successfull build there should be a file called *MKC.deb*.
 
 You can install this file like that:
 
 ```bash
-sudo dpkg -i mkc.deb
+sudo dpkg -i MKC.deb
 ```
 
 

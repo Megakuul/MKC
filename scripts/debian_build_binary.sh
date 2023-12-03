@@ -37,5 +37,5 @@ make DESTDIR="../DEBIAN" install
 
 cd ../..
 # Build the .dep package
-dpkg-deb --build mkc
+dpkg-deb --build MKC
 
