@@ -48,7 +48,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: package
-          path: $HOME/tmp_store/*
+          path: $HOME/tmp_store
 
   upload-packages:
     needs: build-packages
