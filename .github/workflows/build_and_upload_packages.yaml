@@ -41,13 +41,14 @@ jobs:
           mkdir -p $HOME/tmp_store/
           cp ../*.deb ../*.changes ../*.dsc ../*.buildinfo ../*.tar.gz $HOME/tmp_store/
           cp -r ../MKC $HOME/tmp_store/
+
+          ls -al $HOME/tmp_store/
           
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: package
-          path: |
-            path: $HOME/tmp_store/*
+          path: $HOME/tmp_store/*
 
   upload-packages:
     needs: build-packages

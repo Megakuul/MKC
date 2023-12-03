@@ -6,9 +6,6 @@
 #include "Modal.hpp"
 #include "bridge.hpp"
 #include "Browser.hpp"
-#include "gtkmm/enums.h"
-#include "gtkmm/menuitem.h"
-#include "gtkmm/progressbar.h"
 #include "keyhandler.hpp"
 
 using namespace std;
@@ -16,6 +13,8 @@ using namespace std;
 Toolbar::Toolbar(Gtk::Window *Parent, Browser *&CurrentBrowser)
   : AFileBtn(), ADirBtn(), RnObjBtn(), DObjBtn(), RObjBtn(), CObjBtn(), MObjBtn(), PMenu(), PMBtn() {
     set_name("toolbar");
+
+	dispatcher.connect(sigc::mem_fun(*this, &Toolbar::on_process_map_update));
     
     AFileBtn.set_stock_id(Gtk::Stock::FILE);
     AFileBtn.set_tooltip_text(ADD_FILE_KEY_LB);
