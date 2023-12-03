@@ -37,14 +37,14 @@ jobs:
         with:
           name: package
           path: |
-            ../*.deb
-            ../*.changes
-            ../*.dsc
-            ../*.asc
-            ../*.buildinfo
-            ../*.tar.gz
-            ../*.tar.xz
-            ../MKC
+            ${{ github.workspace }}/*.deb
+            ${{ github.workspace }}/*.changes
+            ${{ github.workspace }}/*.dsc
+            ${{ github.workspace }}/*.asc
+            ${{ github.workspace }}/*.buildinfo
+            ${{ github.workspace }}/*.tar.gz
+            ${{ github.workspace }}/*.tar.xz
+            ${{ github.workspace }}/MKC
 
   upload-packages:
     needs: build-packages
