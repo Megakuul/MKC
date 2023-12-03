@@ -55,6 +55,13 @@ jobs:
         with:
           name: package
 
+      - name: Test
+        run: |
+          pwd
+          ls -al .
+          ls -al ../
+          ls -al package
+
       - name: Install dput
         run: |
           sudo apt update -y
