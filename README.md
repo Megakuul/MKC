@@ -4,7 +4,7 @@ A good filexplorer for Linux
 
 ## Install Software
 
-#### Debian / Ubuntu
+#### Ubuntu
 
 Build from official ppa repository:
 ```bash
@@ -13,14 +13,25 @@ sudo apt update
 sudo apt install mkc
 ```
 
-For building the *.deb* package manually, look at "Build debian package" section below.
+Remove the package with:
+```bash
+sudo apt remove mkc
+```
+
+#### Debian
+
+Build from *.deb* release:
+```bash
+wget https://github.com/megakuul/mkc/releases/download/latest/mkc.deb
+sudo dpkg -i mkc.deb
+```
 
 Remove the package with:
 ```bash
 sudo apt remove mkc
 ```
 
-#### Arch Linux
+#### Arch
 
 Build from *PKGBUILD*:
 ```bash
@@ -47,10 +58,16 @@ The Megakuul Commander package uses a very simple continuous update model. The v
 
 There is no "unreleased", "beta" or "preview" version, the newest version is always marked as "stable". If issues occur, they are fixed in the latest version -> Old versions are not maintained or changed in any way.
 
-On *debian* based distros, you can just update the package like regular packages:
+On *ubuntu*, you can just update the package like regular packages:
 ```bash
 sudo apt update -y
 sudo apt upgrade -y
+```
+
+On *debian*, you must re-download the package and reinstall it:
+```bash
+wget https://github.com/megakuul/mkc/releases/download/latest/mkc.deb
+sudo dpkg -i mkc.deb
 ```
 
 For *arch* distros, you must again fetch the install script and execute it:
@@ -59,7 +76,6 @@ git clone https://github.com/megakuul/mkc.git
 curl -o PKGBUILD https://raw.githubusercontent.com/Megakuul/MKC/main/arch/PKGBUILD
 makepkg -si
 ```
-This is because the package is currently not available on the *AUR* repo.
 
 ## Build arch package
 
@@ -98,8 +114,6 @@ sudo dpkg -i mkc.deb
 
 Building the source package is handled with the *debian* folder structure, it's used to build the project source package, this is usually required when uploading the package to a PPA or another Repository. Compared to the *DEBIAN* structure it's more complex and relies on compilation and dependency-handling based on debians packaging structure.
 
-
-
 To build the source package (_source.changes & .dsc etc.) for e.g. uploading to a ppa you can use the script in the *scripts* dir:
 
 ```bash
@@ -109,19 +123,8 @@ bash debian_build_source.sh <gpg-email>
 
 If you provide a mail address to the script, it signes the *.changes* and *.dsc* file with the local gpg key that matches the mail address. Omitting the mail will just not sign the files.
 
-If you want the files to be signed, make sure to first import the GPG keys (usually these are the keys also present on the ppa):
 
-```bash
-echo "$GPG_PRIVATE_KEY" | gpg --import
-echo "$GPG_PUBLIC_KEY" | gpg --import
-```
-
-Then you can either use dput to upload the package:
-
-```bash
-commit_number=$(git rev-list --count HEAD)
-dput ppa:<yourname>/<yourpackage> "mkc_$commit_number-1_source.changes"
-```
+#### Test package
 
 To locally test / install the package you can use:
 

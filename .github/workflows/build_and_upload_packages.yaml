@@ -1,0 +1,85 @@
+name: Build and upload packages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-packages:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install debian packaging tools and makedependencies
+        run: |
+          sudo apt update -y
+          sudo apt install -y debhelper clang cmake git devscripts gnupg libgtkmm-3.0-dev zlib1g-dev
+
+      - name: Import GPG Key
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 -d | gpg --batch --import
+          gpg --list-secret-keys
+
+      - name: Build source package
+        run: |
+          cd scripts
+          bash debian_build_source.sh megakuulr@gmail.com
+          
+      - name: Build binary package
+        run: |
+          cd scripts
+          bash debian_build_binary.sh
+          
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: package
+          path: |
+            ../*.deb
+            ../*.changes
+            ../*.dsc
+            ../*.asc
+            ../*.buildinfo
+            ../*.tar.gz
+            ../*.tar.xz
+            ../mkc
+
+  upload-packages:
+    needs: build-packages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: package
+
+      - name: Install dput
+        run: |
+          sudo apt update -y
+          sudo apt install -y dput
+
+      - name: Upload Ubuntu PPA package
+        run: |
+          cd package/mkc
+          version=$(dpkg-parsechangelog -S Version)
+          cd ..
+          dput ppa:megakuul/mkc "mkc_${version}_source.changes"
+
+      - name: Delete previous 'latest' Debian release package
+        run: |
+          if gh release view latest; then
+            gh release delete latest
+          fi
+      - name: Create 'latest' Debian release package
+        run: |
+          cd package/mkc
+          version=$(dpkg-parsechangelog -S Version)
+          gh release create latest --title "Latest Release (Version: $version)"
+
+      - name: Upload 'latest' Debian release package
+        run: |
+          cd package
+          gh release upload latest ./mkc.deb
+
