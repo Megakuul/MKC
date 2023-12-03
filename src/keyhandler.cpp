@@ -32,7 +32,7 @@ bool HandleKeyPress(
 	  bridge::wRestoreObject(Parent, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
 	  break;
 	case OPEN_RECOVER_KEY:
-	  bridge::wChangeDir(
+	  bridge::wNavigate(
 		    Parent, CurrentBrowser, Pathentry,
 			std::filesystem::path(getenv("HOME")) / TRASH_PATH_REL);
 	  break;
@@ -56,6 +56,7 @@ bool HandleKeyPress(
 	  break;
 	case PATHENTRY_KEY:
 	  Parent->set_focus(*Pathentry);
+	  Pathentry->set_position(-1);
 	  break;
 	case BROWSER_1_KEY:
 	  bridge::wChangeBrowser(Parent, Browser_1);
@@ -64,13 +65,13 @@ bool HandleKeyPress(
 	  bridge::wChangeBrowser(Parent, Browser_2);
 	  break;
 	case RETURN_KEY:
-	  bridge::wChangeDir(Parent, CurrentBrowser, Pathentry, CurrentBrowser->CurrentPath.parent_path());
+	  bridge::wNavigate(Parent, CurrentBrowser, Pathentry, CurrentBrowser->CurrentPath.parent_path());
 	  break;
 	case RUNSHELL_KEY:
 	  Parent->set_focus(*Runentry);
 	  break;
 	}	
   } else if (event->keyval == REFRESH_KEY)
-	bridge::wChangeDir(Parent, CurrentBrowser, Pathentry, CurrentBrowser->CurrentPath);
+	bridge::wNavigate(Parent, CurrentBrowser, Pathentry, CurrentBrowser->CurrentPath);
   return false;
 }

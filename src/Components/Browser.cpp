@@ -1,16 +1,15 @@
 #include <gtkmm.h>
-#include <Browser.hpp>
-#include <bridge.hpp>
-#include <fsutil.hpp>
 #include <string>
 #include <iostream>
 #include <ctime>
 #include <iomanip>
 #include <sstream>
-#include <filesystem>
+
+#include "Browser.hpp"
+#include "bridge.hpp"
+#include "fsutil.hpp"
 
 using namespace std;
-namespace fs = filesystem;
 
 Browser::Browser(Gtk::Window *Parent, string basePath, Browser *&currentBrowser, Browser *remoteBrowser, Gtk::Entry *pathEntry) : 
   CurrentPath(basePath), RemoteBrowser(remoteBrowser), m_parent(Parent)  {
@@ -32,13 +31,7 @@ Browser::Browser(Gtk::Window *Parent, string basePath, Browser *&currentBrowser,
     auto iter = get_model()->get_iter(path);
 
     string name = iter->get_value(m_columns.name);
-    string type = iter->get_value(m_columns.type);
-    if (type == "d") {
-      fs::path new_path = CurrentPath;
-      bridge::wChangeDir(Parent, this, pathEntry, new_path.append(name));
-    } else if (type == "f") {
-	  bridge::wDefaultOpenObject((CurrentPath / name).string());
-    }
+	bridge::wNavigate(Parent, this, pathEntry, CurrentPath / name);
   });
   
 

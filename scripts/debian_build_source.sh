@@ -3,7 +3,6 @@
 cd ..
 
 version=$(dpkg-parsechangelog -S Version)
-echo "${version}"
 
 echo "Generating '.orig.tar.gz' file from source..."
 tar -czvf "mkc_$version.orig.tar.gz" CMakeLists.txt src/ includes/ assets/

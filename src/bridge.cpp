@@ -1,12 +1,7 @@
 // This File contains wrappers that bridge the direct access to the filesystem (fsutil) and the frontend
 
 #include <gtkmm.h>
-#include <bridge.hpp>
-#include <fsutil.hpp>
-#include <Modal.hpp>
-#include <Browser.hpp>
 #include <system_error>
-#include <uritopath.h>
 #include <string>
 #include <iostream>
 #include <filesystem>
@@ -14,6 +9,11 @@
 #include <vector>
 #include <istream>
 
+#include "bridge.hpp"
+#include "fsutil.hpp"
+#include "Modal.hpp"
+#include "Browser.hpp"
+#include "uritopath.h"
 
 using namespace std;
 namespace fs = filesystem;
@@ -142,7 +142,7 @@ namespace bridge {
     }
   }
   
-  void wDefaultOpenObject(string path) {
+  void wOpenObject(string path) {
 	pid_t pid = fork();
 	if (pid == 0) {
 	  setsid();
@@ -152,18 +152,25 @@ namespace bridge {
 	  std::exit(EXIT_FAILURE);
 	}
   }
-
+  
   void wChangeBrowser(Gtk::Window* mainWindow, Browser* newBrowser) {
     mainWindow->set_focus(*newBrowser);
   }
 
-  void wChangeDir(Gtk::Window* Parent, Browser* browser, Gtk::Entry *pathentry, fs::path directory) {
+  void  wNavigate(Gtk::Window* Parent, Browser* browser, Gtk::Entry *pathentry, fs::path objectpath) {
     try {
+	  fsutil::File objectstat;
+	  fsutil::GetFileInformation(objectpath, objectstat);
+	  if (objectstat.type != "d") {
+		wOpenObject(objectpath);
+		return;
+	  }
+	  
       vector<fsutil::File> new_content;
-      fsutil::GetFilesFromDirectory(directory.c_str(), new_content);
+      fsutil::GetFilesFromDirectory(objectpath.c_str(), new_content);
 
       browser->ClearElements();
-      browser->CurrentPath = directory;
+      browser->CurrentPath = objectpath;
       pathentry->set_text(browser->CurrentPath.c_str());
 	  pathentry->set_position(-1);
 
@@ -178,8 +185,8 @@ namespace bridge {
       // Initialize Filewatcher
       fsutil::DeallocateWatcher(browser->watcher_state, browser->watcher_mutex, browser->watcher_cv);
       // Initialize Filewatcher
-      thread t([directory, browser] {
-        fsutil::InitWatcher(directory, browser->watcher_state, browser->watcher_mutex, browser->watcher_cv,
+      thread t([objectpath, browser] {
+        fsutil::InitWatcher(objectpath, browser->watcher_state, browser->watcher_mutex, browser->watcher_cv,
           [browser](string filename){
             // On create
             fs::path cur_path = browser->CurrentPath;

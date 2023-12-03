@@ -13,7 +13,7 @@ sudo apt update
 sudo apt install mkc
 ```
 
-For building the *.deb* package manually, look at [Build Debian binary](####binary-package).
+For building the *.deb* package manually, look at "Build debian package" section below.
 
 Remove the package with:
 ```bash
@@ -104,8 +104,10 @@ To build the source package (_source.changes & .dsc etc.) for e.g. uploading to 
 
 ```bash
 cd scripts
-bash debian_build_source.sh
+bash debian_build_source.sh <gpg-email>
 ```
+
+If you provide a mail address to the script, it signes the *.changes* and *.dsc* file with the local gpg key that matches the mail address. Omitting the mail will just not sign the files.
 
 If you want the files to be signed, make sure to first import the GPG keys (usually these are the keys also present on the ppa):
 

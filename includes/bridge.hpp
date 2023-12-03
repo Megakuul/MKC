@@ -43,12 +43,12 @@ namespace bridge {
   /**
    * Open element with default application in a detached process
    */
-  void wDefaultOpenObject(std::string filepath);
+  void wOpenObject(std::string filepath);
 
   /**
    * Changes the active/current directory for the provided browser
    */
-  void wChangeDir(Gtk::Window* Parent, Browser* browser, Gtk::Entry *pathentry, std::filesystem::path directory);
+  void wNavigate(Gtk::Window* Parent, Browser* browser, Gtk::Entry *pathentry, std::filesystem::path objectpath);
 
   /**
    * Changes the active/current Browser

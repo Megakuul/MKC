@@ -3,6 +3,7 @@
 #include <ctime>
 #include <filesystem>
 
+#include "fsutil.hpp"
 #include "main.hpp"
 #include "Toolbar.hpp"
 #include "bridge.hpp"
@@ -80,8 +81,8 @@ MainWindow::MainWindow(vector<Glib::ustring> RunCompletions) : m_MainBox(Gtk::OR
   // Initial Navigate to the first Browser
   bridge::wChangeBrowser(this, &m_Browser_1);
   // Initial set directories
-  bridge::wChangeDir(this, &m_Browser_1, &m_Pathentry, "/");
-  bridge::wChangeDir(this, &m_Browser_2, &m_Pathentry, fs::path(getenv("HOME")));
+  bridge::wNavigate(this, &m_Browser_1, &m_Pathentry, "/");
+  bridge::wNavigate(this, &m_Browser_2, &m_Pathentry, fs::path(getenv("HOME")));
 
   signal_key_press_event().connect(sigc::mem_fun(
     *this,
@@ -97,11 +98,11 @@ bool MainWindow::on_key_press(GdkEventKey* event)
 }
 
 void MainWindow::on_returnbtn_clicked() {
-  bridge::wChangeDir(this, CurrentBrowser, &m_Pathentry, CurrentBrowser->CurrentPath.parent_path());
+  bridge::wNavigate(this, CurrentBrowser, &m_Pathentry, CurrentBrowser->CurrentPath.parent_path());
 }
 
 void MainWindow::on_pathentry_activate() {
-  bridge::wChangeDir(this, CurrentBrowser, &m_Pathentry, fs::path(m_Pathentry.get_text()));
+  bridge::wNavigate(this, CurrentBrowser, &m_Pathentry, fs::path(m_Pathentry.get_text()));
 }
 
 bool MainWindow::on_pathentry_key_press(GdkEventKey* event) {
