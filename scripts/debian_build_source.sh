@@ -22,11 +22,8 @@ if [ "$#" -eq 1 ]; then
     DSC_FILE="mkc_${version}.dsc"
     CHANGES_FILE="mkc_${version}_source.changes"
 
-	gpg --batch --yes --local-user $GPG_EMAIL --clearsign "$DSC_FILE"
-	gpg --batch --yes --local-user $GPG_EMAIL --clearsign "$CHANGES_FILE"
-
-    gpg --verify "${DSC_FILE}.asc"
-    gpg --verify "${CHANGES_FILE}.asc"
+    debsign --re-sign -k$GPG_EMAIL $DSC_FILE
+    debsign --re-sign -k$GPG_EMAIL $CHANGES_FILE
 
     echo "Signature for '.dsc' file can be found at ${DSC_FILE}.asc"
     echo "Signature for '.changes' file can be found at ${CHANGES_FILE}.asc"

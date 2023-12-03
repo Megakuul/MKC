@@ -16,7 +16,7 @@ jobs:
       - name: Install debian packaging tools and makedependencies
         run: |
           sudo apt update -y
-          sudo apt install -y debhelper clang cmake git devscripts dput gnupg libgtkmm-3.0-dev zlib1g-dev
+          sudo apt install -y debhelper clang cmake git devscripts dput gnupg libgtkmm-3.0-dev zlib1g-dev debsign
 
       - name: Import GPG Key
         run: |
