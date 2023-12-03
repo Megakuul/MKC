@@ -31,20 +31,26 @@ jobs:
         run: |
           cd scripts
           bash debian_build_binary.sh
+
+      - name: Copy artifacts
+        run: |
+          # This is a workaround, as upload-artifact does not support relativ paths
+          mkdir -p ${{ github.workspace }}/artifacts
+          cp ../*.deb ${{ github.workspace }}/artifacts/
+          cp ../*.changes ${{ github.workspace }}/artifacts/
+          cp ../*.dsc ${{ github.workspace }}/artifacts/
+          cp ../*.asc ${{ github.workspace }}/artifacts/
+          cp ../*.buildinfo ${{ github.workspace }}/artifacts/
+          cp ../*.tar.gz ${{ github.workspace }}/artifacts/
+          cp ../*.tar.xz ${{ github.workspace }}/artifacts/
+          cp -r ../MKC ${{ github.workspace }}/artifacts/
           
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: package
           path: |
-            ${{ github.workspace }}/*.deb
-            ${{ github.workspace }}/*.changes
-            ${{ github.workspace }}/*.dsc
-            ${{ github.workspace }}/*.asc
-            ${{ github.workspace }}/*.buildinfo
-            ${{ github.workspace }}/*.tar.gz
-            ${{ github.workspace }}/*.tar.xz
-            ${{ github.workspace }}/MKC
+            path: ${{ github.workspace }}/artifacts/*
 
   upload-packages:
     needs: build-packages
@@ -60,7 +66,6 @@ jobs:
           pwd
           ls -al .
           ls -al ../
-          ls -al package
 
       - name: Install dput
         run: |
@@ -69,7 +74,7 @@ jobs:
 
       - name: Upload Ubuntu PPA package
         run: |
-          cd package/MKC
+          cd MKC
           version=$(dpkg-parsechangelog -S Version)
           cd ..
           dput ppa:megakuul/mkc "mkc_${version}_source.changes"
@@ -81,12 +86,11 @@ jobs:
           fi
       - name: Create 'latest' Debian release package
         run: |
-          cd package/MKC
+          cd MKC
           version=$(dpkg-parsechangelog -S Version)
           gh release create latest --title "Latest Release (Version: $version)"
 
       - name: Upload 'latest' Debian release package
         run: |
-          cd package
           gh release upload latest ./MKC.deb
 
