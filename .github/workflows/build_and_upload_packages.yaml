@@ -38,20 +38,16 @@ jobs:
           ls -al .
           
           # This is a workaround, as upload-artifact does not support relativ paths
-          mkdir -p ${{ github.workspace }}/tmp_store/
-          cp ../*.deb ${{ github.workspace }}/tmp_store/
-          cp ../*.changes ${{ github.workspace }}/tmp_store/
-          cp ../*.dsc ${{ github.workspace }}/tmp_store/
-          cp ../*.buildinfo ${{ github.workspace }}/tmp_store/
-          cp ../*.tar.gz ${{ github.workspace }}/tmp_store/
-          cp -r ../MKC ${{ github.workspace }}/tmp_store/
+          mkdir -p $HOME/tmp_store/
+          cp ../*.deb ../*.changes ../*.dsc ../*.buildinfo ../*.tar.gz $HOME/tmp_store/
+          cp -r ../MKC $HOME/tmp_store/
           
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: package
           path: |
-            path: ${{ github.workspace }}/tmp_store/*
+            path: $HOME/tmp_store/*
 
   upload-packages:
     needs: build-packages
