@@ -11,8 +11,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          path: mkc
+
+      - name: Test
+        run: |
+          pwd
+          ls -al .
+          ls -al ../
+          ls -al ../../
+          exit 1
 
       - name: Install debian packaging tools and makedependencies
         run: |
