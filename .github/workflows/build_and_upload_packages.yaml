@@ -93,5 +93,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload latest ./MKC.deb
+          cd MKC
+          gh release upload latest ../MKC.deb --repo megakuul/mkc
 
