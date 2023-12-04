@@ -4,6 +4,7 @@
 #include <gtkmm.h>
 #include "Browser.hpp"
 #include "RunShell.hpp"
+#include "Toolbar.hpp"
 
 #define ADD_FILE_KEY GDK_KEY_1
 #define ADD_FILE_KEY_LB "CTRL + 1"
@@ -53,6 +54,7 @@ bool HandleKeyPress(
 	Browser* CurrentBrowser,
 	Browser* Browser_1,
 	Browser* Browser_2,
+	Toolbar* Toolbar,
 	Gtk::Entry* Pathentry,
     RunShell* Runentry);
 

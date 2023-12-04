@@ -6,6 +6,7 @@
 #include <filesystem>
 
 #include "Browser.hpp"
+#include "Toolbar.hpp"
 
 namespace bridge {
 
@@ -28,17 +29,17 @@ namespace bridge {
   /**
    * Cleans all files from the provided list
    */
-  void wDeleteObjects(Gtk::Window* Parent, std::string source, std::vector<std::string> objectnames);
+  void wDeleteObjects(Gtk::Window* Parent, Toolbar* tb, std::string source, std::vector<std::string> objectnames);
 
   /**
    * Restores all '.mkc' files from the provided list
    */
-  void wRestoreObject(Gtk::Window* Parent, std::string source, std::vector<std::string> objectnames);
+  void wRestoreObject(Gtk::Window* Parent, Toolbar* tb, std::string source, std::vector<std::string> objectnames);
 
   /**
    * Copies all selected files from the current-browser to the other browser
    */
-  void wDirectCopyObjects(Gtk::Window* Parent, std::string source, std::string destination, std::vector<std::string> objectname, bool cut);
+  void wDirectCopyObjects(Gtk::Window* Parent, Toolbar* tb, std::string source, std::string destination, std::vector<std::string> objectname, bool cut);
 
   /**
    * Open element with default application in a detached process
@@ -67,7 +68,7 @@ namespace bridge {
    *
    * Fully compatible with Nautilus (Gnome) and Thunar (Xfce)
    */
-  void wHandleGnomePaste(Gtk::Window* Parent, Browser* CurrentBrowser);
+  void wHandleGnomePaste(Gtk::Window* Parent,Browser* CurrentBrowser);
 
   /**
    * Autocompletes the last word on the provided entry based on the content of the currentbrowser

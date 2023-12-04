@@ -94,7 +94,7 @@ MainWindow::MainWindow(vector<Glib::ustring> RunCompletions) : m_MainBox(Gtk::OR
 
 bool MainWindow::on_key_press(GdkEventKey* event)
 {  
-  return HandleKeyPress(event, this, CurrentBrowser, &m_Browser_1, &m_Browser_2, &m_Pathentry, &m_Runentry);
+  return HandleKeyPress(event, this, CurrentBrowser, &m_Browser_1, &m_Browser_2, &m_Toolbar, &m_Pathentry, &m_Runentry);
 }
 
 void MainWindow::on_returnbtn_clicked() {

@@ -52,9 +52,9 @@ private:
    */
   std::queue<std::pair<size_t, double>> update_queue;
   /**
-   * Maps processes to menuitems
+   * Maps processes to <MenuItem, ProgressBar>
    */
-  std::map<size_t, Gtk::MenuItem*> process_map;
+  std::map<size_t, std::pair<Gtk::MenuItem*, Gtk::ProgressBar*>> process_map;
 };
 
 #endif

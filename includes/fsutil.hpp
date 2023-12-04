@@ -74,14 +74,7 @@ namespace fsutil {
   void RecoverObject(const std::string source, OP operation=OP::ERROR);
 
   /**
-   * Recursively deletes every file or directory in the names vector contained in the directory path
-   * @param directory Directory Path
-   * @param names Names of the Objects
-  */
-  void DeleteObjects(std::string directory, std::vector<std::string> names, OP operation);
-
-  /**
-   * Removes a file from the current location with the specified operation
+   * Removes a file or directory (recursively) from the current location with the specified operation
   */
   void CleanObject(std::string file, OP operation);
 

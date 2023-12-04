@@ -40,6 +40,8 @@ fsutil::OP ShowDelConfirmDial(Gtk::Window *Parent);
 
 /**
  * Creates a dialog to display an error
+ *
+ * This dialog is thread safe and can be called from threads different to the Main-Thread
  * @param Parent window to draw the dialog
  * @param label text to display
  */

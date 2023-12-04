@@ -4,6 +4,7 @@
 #include "bridge.hpp"
 #include "keyhandler.hpp"
 #include "fsutil.hpp"
+#include "Toolbar.hpp"
 
 bool HandleKeyPress(
     GdkEventKey* event,
@@ -11,6 +12,7 @@ bool HandleKeyPress(
 	Browser* CurrentBrowser,
 	Browser* Browser_1,
 	Browser* Browser_2,
+	Toolbar* Toolbar,
 	Gtk::Entry* Pathentry,
     RunShell* Runentry) {
   
@@ -26,10 +28,10 @@ bool HandleKeyPress(
 	  bridge::wRenameObjects(Parent, CurrentBrowser, CurrentBrowser->CurrentPath);
 	  break;
 	case DELETE_KEY:
-		bridge::wDeleteObjects(Parent, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
+	  bridge::wDeleteObjects(Parent, Toolbar, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
 	  break;
 	case RECOVER_KEY:
-	  bridge::wRestoreObject(Parent, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
+	  bridge::wRestoreObject(Parent, Toolbar, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
 	  break;
 	case OPEN_RECOVER_KEY:
 	  bridge::wNavigate(
@@ -39,6 +41,7 @@ bool HandleKeyPress(
 	case COPY_KEY:
 	  bridge::wDirectCopyObjects(
 	    Parent,
+		Toolbar,
 		CurrentBrowser->CurrentPath,
 		CurrentBrowser->RemoteBrowser->CurrentPath,
 		CurrentBrowser->GetSelectedNames(),
@@ -48,6 +51,7 @@ bool HandleKeyPress(
 	case MOVE_KEY:
 	  bridge::wDirectCopyObjects(
 	    Parent,
+		Toolbar,
 		CurrentBrowser->CurrentPath,
 		CurrentBrowser->RemoteBrowser->CurrentPath,
 		CurrentBrowser->GetSelectedNames(),

@@ -84,9 +84,11 @@ namespace bridge {
     }
   }
 
-  void wDeleteObjects(Gtk::Window* Parent, string source, vector<string> objectnames) {
+  void wDeleteObjects(Gtk::Window* Parent, Toolbar* tb, string source, vector<string> objectnames) {
 	
 	fsutil::OP operation = ShowDelConfirmDial(Parent);
+	size_t tb_process = tb->init_process();
+	double fraction = 1.0 / objectnames.size();
 
     // Do not delete current dir 
     objectnames.erase(
@@ -97,29 +99,43 @@ namespace bridge {
       remove(objectnames.begin(), objectnames.end(), ".."), objectnames.end()
     );
 
-    try {
-      fsutil::DeleteObjects(source, objectnames, operation); 
-    } catch (const fs::filesystem_error error) {
-	  ShowErrDial(Parent, error.what());
-    }
-  }
-
-  void wRestoreObject(Gtk::Window* Parent, string source, vector<string> objectnames) {
-	fsutil::OP operation = ShowOperationDial(Parent);
-	for (const auto& object : objectnames) {
-	  if (fs::path(object).extension() == ".mkc") {
+	
+	for (const string &object : objectnames) {
+	  thread([Parent, tb, tb_process, fraction, object, source, operation]() {
 		try {
-		  fsutil::RecoverObject(fs::path(source) / object);
-		} catch (fs::filesystem_error fserror) {
-		  ShowErrDial(Parent, fserror.what());
-		} catch (exception error) {
+		  CleanObject(fs::path(source) / object, operation);
+		} catch (const fs::filesystem_error error) {
 		  ShowErrDial(Parent, error.what());
 		}
-	  }
+		tb->update_process(tb_process, fraction);
+	  }).detach();
 	}
   }
 
-  void wDirectCopyObjects(Gtk::Window* Parent, string source, string destination, vector<string> objectnames, bool cut) {
+  void wRestoreObject(Gtk::Window* Parent, Toolbar* tb, string source, vector<string> objectnames) {
+	fsutil::OP operation = ShowOperationDial(Parent);
+	size_t tb_process = tb->init_process();
+	double fraction = 1.0 / objectnames.size();
+	
+	for (const string& object : objectnames) {
+	  thread([Parent, tb, tb_process, fraction, object, source, operation]() {
+		if (fs::path(object).extension() == ".mkc") {
+		  try {
+			fsutil::RecoverObject(fs::path(source) / object, operation);
+		  } catch (fs::filesystem_error fserror) {
+			ShowErrDial(Parent, fserror.what());
+		  } catch (exception error) {
+			ShowErrDial(Parent, error.what());
+		  }
+		  tb->update_process(tb_process, fraction);
+		}
+	  }).detach();
+	}
+  }
+
+  void wDirectCopyObjects(Gtk::Window* Parent, Toolbar* tb, string source, string destination, vector<string> objectnames, bool cut) {
+	size_t tb_process = tb->init_process();
+	double fraction = 1.0 / objectnames.size();
     // Do not delete current dir 
     objectnames.erase(
       remove(objectnames.begin(), objectnames.end(), "."), objectnames.end()
@@ -129,17 +145,20 @@ namespace bridge {
       remove(objectnames.begin(), objectnames.end(), ".."), objectnames.end()
     );
 
-    try {
-	  for (string object : objectnames) {
-		fs::path src_buf(fs::path(source) / object);
-		fs::path dest_buf(fs::path(destination) / object);
+	for (const string& object : objectnames) {
+	  thread([Parent, tb, tb_process, fraction, object, source, destination, cut]() {
+		try {
+		  fs::path src_buf(fs::path(source) / object);
+		  fs::path dest_buf(fs::path(destination) / object);
 		
-		if (cut) fsutil::MoveObject(src_buf, dest_buf, fsutil::SKIP);
-		else fsutil::CopyObject(src_buf, dest_buf, fsutil::SKIP); 
-	  }
-    } catch (const fs::filesystem_error error) {
-	  ShowErrDial(Parent, error.what());
-    }
+		  if (cut) fsutil::MoveObject(src_buf, dest_buf, fsutil::SKIP);
+		  else fsutil::CopyObject(src_buf, dest_buf, fsutil::SKIP); 
+		} catch (const fs::filesystem_error error) {
+		  ShowErrDial(Parent, error.what());
+		}
+		tb->update_process(tb_process, fraction);
+	  }).detach();
+	}
   }
   
   void wOpenObject(string path) {

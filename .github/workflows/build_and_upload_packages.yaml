@@ -76,8 +76,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if gh release view latest; then
-            gh release delete latest
+          cd MKC
+          if gh release view latest --repo megakuul/mkc; then
+            gh release delete latest --repo megakuul/mkc
           fi
       - name: Create 'latest' Debian release package
         env:

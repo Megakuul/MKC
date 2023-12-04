@@ -85,9 +85,13 @@ fsutil::OP ShowDelConfirmDial(Gtk::Window *Parent) {
 
 
 void ShowErrDial(Gtk::Window *Parent, string label) {
-  Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
+  Glib::signal_idle().connect([Parent, label]() {
+	Gtk::MessageDialog dial(*Parent, "Error", false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK);
 
-  dial.set_secondary_text(label);
+	dial.set_secondary_text(label);
 
-  dial.run();
+	dial.run();
+
+	return false;
+  });
 }
