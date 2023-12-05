@@ -104,15 +104,15 @@ Browser::Browser(Gtk::Window *Parent, string basePath, Browser *&currentBrowser,
   // This Custom Cell renderer along the Lambda function for the cell is there to convert the size to according standard
   // The set_cell_data_func is always executed if a cell needs to rerender
   size->set_cell_data_func(*sizeRenderer,[this](Gtk::CellRenderer* renderer, const Gtk::TreeModel::iterator& iter) {
-    const int& origin_num = (*iter)[m_columns.size];
-    
-    double shorten_num = origin_num;
+    const off_t& origin_num = (*iter)[m_columns.size];
+	
+    off_t shorten_num = origin_num;
     size_t index;
     ostringstream ss;
     string suffix;
 
     for (index = 0; index < 5; ++index) {
-      double next_num = shorten_num / 1000;
+      long next_num = shorten_num / 1000;
       if (next_num < 1) {
         break;
       }

@@ -13,6 +13,7 @@ public:
   void update_process(size_t id, double progress);
 
 protected:
+  // Left Items
   Gtk::ToolButton AFileBtn;
   Gtk::ToolButton ADirBtn;
   Gtk::ToolButton RnObjBtn;
@@ -21,7 +22,11 @@ protected:
   Gtk::ToolButton CObjBtn;
   Gtk::ToolButton MObjBtn;
 
-  Gtk::MenuButton PMBtn;
+  // Splits the section in half (right and left items) by full expanding
+  Gtk::ToolItem SplitItem;
+
+  // Right Items
+  Gtk::ToolButton PMenuBtn;
   Gtk::Menu PMenu;
 
 private:
@@ -37,7 +42,7 @@ private:
   /**
    * Ticker for process ids, that every process gets it's unique id
    */
-  size_t process_ticker;
+  size_t process_ticker = 0;
   /**
    * Mutex to lock when mutating internal data on this object
    */

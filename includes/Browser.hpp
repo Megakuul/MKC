@@ -62,7 +62,7 @@ public:
     Gtk::TreeModelColumn<Glib::ustring> name;
     Gtk::TreeModelColumn<Glib::ustring> type;
     Gtk::TreeModelColumn<int> hardlinks;
-    Gtk::TreeModelColumn<int> size;
+    Gtk::TreeModelColumn<off_t> size;
     Gtk::TreeModelColumn<Glib::ustring> access;
     Gtk::TreeModelColumn<std::time_t> lastEdited;
   };

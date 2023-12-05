@@ -7,14 +7,14 @@
 #include "Modal.hpp"
 #include "bridge.hpp"
 #include "Browser.hpp"
-#include "gtkmm/menuitem.h"
-#include "gtkmm/progressbar.h"
+#include "gdkmm/window.h"
+#include "gtkmm/stock.h"
 #include "keyhandler.hpp"
 
 using namespace std;
 
 Toolbar::Toolbar(Gtk::Window *Parent, Browser *&CurrentBrowser)
-  : AFileBtn(), ADirBtn(), RnObjBtn(), DObjBtn(), RObjBtn(), CObjBtn(), MObjBtn(), PMenu(), PMBtn() {
+  : AFileBtn(), ADirBtn(), RnObjBtn(), DObjBtn(), RObjBtn(), CObjBtn(), MObjBtn(), SplitItem(), PMenuBtn() {
     set_name("toolbar");
 
 	dispatcher.connect(sigc::mem_fun(*this, &Toolbar::on_process_map_update));
@@ -40,9 +40,12 @@ Toolbar::Toolbar(Gtk::Window *Parent, Browser *&CurrentBrowser)
 	MObjBtn.set_stock_id(Gtk::Stock::CUT);
     MObjBtn.set_tooltip_text(MOVE_KEY_LB);
 
-	PMBtn.set_popup(PMenu);
-	PMBtn.show();
-	PMBtn.set_sensitive(true);
+	MObjBtn.set_stock_id(Gtk::Stock::CUT);
+    MObjBtn.set_tooltip_text(MOVE_KEY_LB);
+
+	PMenuBtn.set_stock_id(Gtk::Stock::INFO);
+
+	SplitItem.set_expand(true);
     
     add(AFileBtn);
     add(ADirBtn);
@@ -51,7 +54,10 @@ Toolbar::Toolbar(Gtk::Window *Parent, Browser *&CurrentBrowser)
     add(RObjBtn);
 	add(CObjBtn);
 	add(MObjBtn);
-	add(PMBtn);
+
+	add(SplitItem);
+	
+	add(PMenuBtn);
 
     AFileBtn.signal_clicked().connect([Parent, &CurrentBrowser] {
 	  bridge::wAddFile(Parent, CurrentBrowser->CurrentPath);
@@ -87,6 +93,9 @@ Toolbar::Toolbar(Gtk::Window *Parent, Browser *&CurrentBrowser)
 		CurrentBrowser->GetSelectedNames(),
 		true
 	  );
+	});
+	PMenuBtn.signal_clicked().connect([this] {
+	  PMenu.popup_at_widget(&PMenuBtn, Gdk::GRAVITY_SOUTH_EAST, Gdk::GRAVITY_NORTH_EAST, nullptr);
 	});
 }
 

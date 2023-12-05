@@ -27,7 +27,7 @@ namespace fsutil {
     std::string name;
     std::string type;
     int hardlink;
-    int size;
+    off_t size;
     std::string access;
     time_t lastEdited;
   };
