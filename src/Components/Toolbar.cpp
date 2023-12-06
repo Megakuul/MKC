@@ -7,8 +7,6 @@
 #include "Modal.hpp"
 #include "bridge.hpp"
 #include "Browser.hpp"
-#include "gdkmm/window.h"
-#include "gtkmm/stock.h"
 #include "keyhandler.hpp"
 
 using namespace std;
@@ -43,7 +41,8 @@ Toolbar::Toolbar(Gtk::Window *Parent, Browser *&CurrentBrowser)
 	MObjBtn.set_stock_id(Gtk::Stock::CUT);
     MObjBtn.set_tooltip_text(MOVE_KEY_LB);
 
-	PMenuBtn.set_stock_id(Gtk::Stock::INFO);
+	PMenuBtn.set_stock_id(Gtk::Stock::GOTO_BOTTOM);
+	PMenuBtn.set_tooltip_text("Running Operations");
 
 	SplitItem.set_expand(true);
     
@@ -114,70 +113,73 @@ void Toolbar::update_process(size_t id, double progress) {
 }
 
 void Toolbar::on_process_map_update() {
-  {
-	while (true) {
-	  size_t id;
-	  {
-		lock_guard<mutex> guard(mut);
-		if (init_queue.empty()) break;
-		id = init_queue.front();
-		init_queue.pop();
-	  }
+  // TODO: Fix this, with GDK_NOTHING warnings are comming
+  GdkEvent *event = gdk_event_new(GDK_NOTHING);
+  while (true) {
+	size_t id;
+	{
+	  lock_guard<mutex> guard(mut);
+	  if (init_queue.empty()) break;
+	  id = init_queue.front();
+	  init_queue.pop();
+	}
 	  
-	  // TODO: Init MenuItems and then add it to the process_map
-	  Gtk::MenuItem *menu_item = Gtk::manage(new Gtk::MenuItem());
-	  Gtk::Box *box = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL));
+	Gtk::MenuItem *menu_item = Gtk::manage(new Gtk::MenuItem());
+	Gtk::Box *box = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL));
 	
-	  Gtk::Label *label = Gtk::manage(new Gtk::Label(to_string(id)));
-	  Gtk::ProgressBar *pb = Gtk::manage(new Gtk::ProgressBar());
-	  pb->set_fraction(0);
+	Gtk::Label *label = Gtk::manage(new Gtk::Label(to_string(id)));
+	Gtk::ProgressBar *pb = Gtk::manage(new Gtk::ProgressBar());
+	pb->set_fraction(0);
 
-	  box->pack_start(*label);
-	  box->pack_start(*pb);
+	box->pack_start(*label);
+	box->pack_start(*pb);
+	box->set_valign(Gtk::Align::ALIGN_CENTER);
 
-	  menu_item->add(*box);
+	menu_item->add(*box);
 
-	  {
-		lock_guard<mutex> guard(mut);
-		process_map.insert(make_pair(id, make_pair(menu_item, pb)));
-	  }
-
-	  PMenu.append(*menu_item);
+	{
+	  lock_guard<mutex> guard(mut);
+	  process_map.insert(make_pair(id, make_pair(menu_item, pb)));
 	}
 
+	PMenu.append(*menu_item);
+	PMenu.hide();
 	PMenu.show_all();
+	PMenu.popup_at_widget(&PMenuBtn, Gdk::GRAVITY_SOUTH_EAST, Gdk::GRAVITY_NORTH_EAST, event);
+  }
 
-	while (true) {
-	  size_t id;
-	  double progress;
-	  Gtk::MenuItem *item; 
-	  Gtk::ProgressBar *pb;
+  while (true) {
+	size_t id;
+	double progress;
+	Gtk::MenuItem *item; 
+	Gtk::ProgressBar *pb;
+	{
+	  lock_guard<mutex> guard(mut);
+	  if (update_queue.empty()) break;
+	  pair front = update_queue.front();
+	  id = front.first;
+	  progress = front.second;
+	  update_queue.pop();
+		
+	  auto process = process_map.find(id);
+	  if (process == process_map.end()) continue;
+		
+	  item = process->second.first;
+	  pb = process->second.second;
+	}
+	  
+	double new_progress = pb->get_fraction() + progress;
+	if (new_progress >= 1.0) {
 	  {
 		lock_guard<mutex> guard(mut);
-		if (update_queue.empty()) break;
-		pair front = update_queue.front();
-		id = front.first;
-		progress = front.second;
-		update_queue.pop();
-		
-		auto process = process_map.find(id);
-		if (process == process_map.end()) continue;
-		
-		item = process->second.first;
-		pb = process->second.second;
+		process_map.erase(id);
 	  }
-	  
-	  double new_progress = pb->get_fraction() + progress;
-	  if (new_progress >= 1.0) {
-		{
-		  lock_guard<mutex> guard(mut);
-		  process_map.erase(id);
-		}
-		PMenu.remove(*item);
-	  } else {
-		pb->set_fraction(new_progress);
-	  }
+	  PMenu.remove(*item);
+	  PMenu.hide();
+	} else {
+	  pb->set_fraction(new_progress);
 	}
   }
+  gdk_event_free(event);
 }
 

@@ -56,7 +56,13 @@ sudo pacman -R mkc-git
 
 The Megakuul Commander package uses a very simple continuous update model. The version of the software is determined by the commit-number on the *main* branch.
 
-There is no "unreleased", "beta" or "preview" version, the newest version is always marked as "stable". If issues occur, they are fixed in the latest version -> Old versions are not maintained or changed in any way.
+Package version numbers can be adjusted to the commit number with the *update_version* script:
+```bash
+cd scripts
+bash update_version.sh
+```
+
+This should be run whenever a new version is pushed to *main* branch (the branch that triggers the build pipeline).
 
 On *ubuntu*, you can just update the package like regular packages:
 ```bash

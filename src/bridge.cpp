@@ -18,6 +18,8 @@
 using namespace std;
 namespace fs = filesystem;
 
+#define PROCESS_FRACTION_PRECISION 10000
+
 namespace bridge {
   
   void wAddFile(Gtk::Window* Parent, string location) {
@@ -88,7 +90,8 @@ namespace bridge {
 	
 	fsutil::OP operation = ShowDelConfirmDial(Parent);
 	size_t tb_process = tb->init_process();
-	double fraction = 1.0 / objectnames.size();
+	double fraction =
+	  ceil(1.0 / objectnames.size() * PROCESS_FRACTION_PRECISION) / PROCESS_FRACTION_PRECISION;
 
     // Do not delete current dir 
     objectnames.erase(
@@ -99,7 +102,6 @@ namespace bridge {
       remove(objectnames.begin(), objectnames.end(), ".."), objectnames.end()
     );
 
-	
 	for (const string &object : objectnames) {
 	  thread([Parent, tb, tb_process, fraction, object, source, operation]() {
 		try {
@@ -115,7 +117,8 @@ namespace bridge {
   void wRestoreObject(Gtk::Window* Parent, Toolbar* tb, string source, vector<string> objectnames) {
 	fsutil::OP operation = ShowOperationDial(Parent);
 	size_t tb_process = tb->init_process();
-	double fraction = 1.0 / objectnames.size();
+	double fraction =
+	  ceil(1.0 / objectnames.size() * PROCESS_FRACTION_PRECISION) / PROCESS_FRACTION_PRECISION;
 	
 	for (const string& object : objectnames) {
 	  thread([Parent, tb, tb_process, fraction, object, source, operation]() {
@@ -135,7 +138,8 @@ namespace bridge {
 
   void wDirectCopyObjects(Gtk::Window* Parent, Toolbar* tb, string source, string destination, vector<string> objectnames, bool cut) {
 	size_t tb_process = tb->init_process();
-	double fraction = 1.0 / objectnames.size();
+	double fraction =
+	  ceil(1.0 / objectnames.size() * PROCESS_FRACTION_PRECISION) / PROCESS_FRACTION_PRECISION;
     // Do not delete current dir 
     objectnames.erase(
       remove(objectnames.begin(), objectnames.end(), "."), objectnames.end()

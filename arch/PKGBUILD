@@ -1,5 +1,5 @@
 pkgname=mkc-git
-pkgver=92
+pkgver=94
 pkgrel=1
 pkgdesc=Megakuul Commander - Simple filebrowser that is meant to speed up productivity
 arch=('x86_64')
