@@ -22,16 +22,24 @@ jobs:
           echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 -d | gpg --batch --import
           gpg --list-secret-keys
 
-      - name: Build source package
+      - name: Build ubuntu source packages
         run: |
-          cd scripts
-          bash debian_build_source.sh megakuulr@gmail.com
+          # Get version
+          version=$(dpkg-parsechangelog -S Version)
+          # This will build the source for all specified ubuntu releases
+          # Commaseperated list of ubuntu releases must be defined as repository variable
+          IFS=',' read -ra RELEASE <<< "${{ vars.UBUNTU_BUILD_RELEASES }}"
+          for REL in "${RELEASE[@]}"; do
+            dch -v "${version}-${REL}" -D "${REL}" -m "Continuous release, build by CI/CD automation process."
+            cd script
+            bash debian_build_source.sh megakuulr@gmail.com
+            cd ..
+          done
           
-      - name: Build binary package
+      - name: Build binary debian package
         run: |
           cd scripts
           bash debian_build_binary.sh
-
       - name: Copy artifacts
         run: |
           # This is a workaround, as upload-artifact does not support relativ paths
@@ -69,7 +77,10 @@ jobs:
           cd MKC
           version=$(dpkg-parsechangelog -S Version)
           cd ..
-          dput ppa:megakuul/mkc "mkc_${version}_source.changes"
+          IFS=',' read -ra RELEASE <<< "${{ env.UBUNTU_BUILD_RELEASES }}"
+          for REL in "${RELEASE[@]}"; do
+            dput ppa:megakuul/mkc "mkc_${version}-${REL}_source.changes"
+          done
 
       - name: Delete previous 'latest' Debian release package
         env:
