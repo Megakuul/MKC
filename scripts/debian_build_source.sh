@@ -31,3 +31,5 @@ else
     dpkg-buildpackage -S -uc -us
 	cd ..
 fi
+
+cd scripts

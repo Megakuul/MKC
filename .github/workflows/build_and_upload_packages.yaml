@@ -31,7 +31,7 @@ jobs:
           IFS=',' read -ra RELEASE <<< "${{ vars.UBUNTU_BUILD_RELEASES }}"
           for REL in "${RELEASE[@]}"; do
             dch -v "${version}-${REL}" -D "${REL}" -m "Continuous release, build by CI/CD automation process."
-            cd script
+            cd scripts
             bash debian_build_source.sh megakuulr@gmail.com
             cd ..
           done
