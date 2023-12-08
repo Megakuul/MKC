@@ -7,6 +7,7 @@
 #include "Modal.hpp"
 #include "bridge.hpp"
 #include "Browser.hpp"
+#include "gdkmm/event.h"
 #include "keyhandler.hpp"
 
 using namespace std;
@@ -113,8 +114,6 @@ void Toolbar::update_process(size_t id, double progress) {
 }
 
 void Toolbar::on_process_map_update() {
-  // TODO: Fix this, with GDK_NOTHING warnings are comming
-  GdkEvent *event = gdk_event_new(GDK_NOTHING);
   while (true) {
 	size_t id;
 	{
@@ -125,17 +124,11 @@ void Toolbar::on_process_map_update() {
 	}
 	  
 	Gtk::MenuItem *menu_item = Gtk::manage(new Gtk::MenuItem());
-	Gtk::Box *box = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL));
-	
-	Gtk::Label *label = Gtk::manage(new Gtk::Label(to_string(id)));
+    
 	Gtk::ProgressBar *pb = Gtk::manage(new Gtk::ProgressBar());
 	pb->set_fraction(0);
 
-	box->pack_start(*label);
-	box->pack_start(*pb);
-	box->set_valign(Gtk::Align::ALIGN_CENTER);
-
-	menu_item->add(*box);
+	menu_item->add(*pb);
 
 	{
 	  lock_guard<mutex> guard(mut);
@@ -145,12 +138,14 @@ void Toolbar::on_process_map_update() {
 	PMenu.append(*menu_item);
 	PMenu.hide();
 	PMenu.show_all();
-	PMenu.popup_at_widget(&PMenuBtn, Gdk::GRAVITY_SOUTH_EAST, Gdk::GRAVITY_NORTH_EAST, event);
+	// TODO: This is generating a Warning, due to the required event
+	PMenu.popup_at_widget(&PMenuBtn, Gdk::GRAVITY_SOUTH_EAST, Gdk::GRAVITY_NORTH_EAST, nullptr);
   }
 
   while (true) {
 	size_t id;
 	double progress;
+	string operation;
 	Gtk::MenuItem *item; 
 	Gtk::ProgressBar *pb;
 	{
@@ -180,6 +175,5 @@ void Toolbar::on_process_map_update() {
 	  pb->set_fraction(new_progress);
 	}
   }
-  gdk_event_free(event);
 }
 

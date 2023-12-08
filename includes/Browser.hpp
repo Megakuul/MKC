@@ -15,40 +15,8 @@ public:
   Browser(Gtk::Window *Parent, std::string basePath, Browser *&currentBrowser, Browser *remoteBrowser, Gtk::Entry *pathEntry);
 
   /**
-   * Current state of the filewatcher
-   * 
-   * 
-   * One of the variables to handle the Watcher State
-   * 
-   * 
-   * If the watcher_state is false it means that the watcher is running,
-   * true will stop the watcher.
+   * TreeModel for the Browser
   */
-  std::atomic<bool> watcher_state{true};
-  /**
-   * Mutex for the state of the current state of the filewatcher
-   * 
-   * 
-   * One of the variables to handle the Watcher State
-  */
-  std::mutex watcher_mutex;
-  /**
-   * Conditional variable to check when the current state of the filewatcher got changed
-   * 
-   * 
-   * One of the variables to handle the Watcher State
-  */
-  std::condition_variable watcher_cv;
-  /**
-   * Current Path of the Filebrowser
-  */
-  std::filesystem::path CurrentPath;
-
-  /**
-   * Pointer to the "other" Browser
-   */
-  Browser *RemoteBrowser;
-
   class ModelColumns : public Gtk::TreeModel::ColumnRecord {
   public:
     ModelColumns() {
@@ -67,15 +35,48 @@ public:
     Gtk::TreeModelColumn<std::time_t> lastEdited;
   };
 
-  /**
-   * RefPtr to the ListStore
-  */
-  Glib::RefPtr<Gtk::ListStore> m_listStore;
+  struct WatcherReference {
+	/**
+	 * Current state of the filewatcher
+	 * 
+	 * 
+	 * One of the variables to handle the Watcher State
+	 * 
+	 * 
+	 * If the watcher_state is false it means that the watcher is running,
+	 * true will stop the watcher.
+	 */
+	std::atomic<bool> WatcherState{true};
+	/**
+	 * Mutex for the state of the current state of the filewatcher
+	 * 
+	 * 
+	 * One of the variables to handle the Watcher State
+	 */
+	std::mutex WatcherMutex;
+	/**
+	 * Conditional variable to check when the current state of the filewatcher got changed
+	 * 
+	 * 
+	 * One of the variables to handle the Watcher State
+	 */
+	std::condition_variable WatcherCv;
+  };
 
   /**
-   * ModelColumns (like a blueprint or template for the columns)
+   * Watcher Reference that binds to the current filewatcher
   */
-  ModelColumns m_columns;
+  WatcherReference WatchRef;
+
+  /**
+   * Current Path of the Filebrowser
+  */
+  std::filesystem::path CurrentPath;
+
+  /**
+   * Pointer to the "other" Browser
+   */
+  Browser *RemoteBrowser;
 
   /**
    * Adds an element to the Browser
@@ -88,17 +89,71 @@ public:
   void RemoveElement(const std::string& name);
 
   /**
+   * Updates attributes of an element
+   */
+  void UpdateElement(const fsutil::File &file);
+
+  /**
    * Clears all the elements from the Browser
   */
   void ClearElements();
 
   /**
-   * Gets the Names of the selected elements
+   * Gets the Names of all elements in the Browser
+  */
+  std::vector<std::string> GetAllNames();
+
+  /**
+   * Gets the Names of the selected elements in the Browser
   */
   std::vector<std::string> GetSelectedNames();
 
-private:
+  /**
+   * Disables the Sorting column (and by this disables the overhead of sorting always when inserting rows)
+  */
+  void DisableSorting();
+
+  /**
+   * Sets the Sorting column of the Browser to the default (name)
+  */
+  void DefaultSorting();
+
+protected:
+  /**
+   * RefPtr to the ListStore
+  */
+  Glib::RefPtr<Gtk::ListStore> m_listStore;
+
+  /**
+   * ModelColumns (like a blueprint or template for the columns)
+  */
+  ModelColumns m_columns;
+
+  /**
+   * Parent Window reference
+  */
   Gtk::Window *m_parent;
+
+private:
+  /**
+   * Operations that can be performed by the el_dispatcher
+  */
+  enum EL_DISPATCHER_OP {
+    APPEND = 0,
+	DELETE = 1,
+	UPDATE = 2,
+  };
+  
+  /**
+   * Map that holds elements to be dispatched
+  */
+  std::map<Glib::ustring, std::pair<fsutil::File*, EL_DISPATCHER_OP>> el_dispatcher_map;
+  
+  /**
+   * Starts a cron dispatcher that runs in an interval and updates elements
+  */
+  void start_el_dispatcher(int intervalms);
+  
   /**
    * Function that is executed when a header of a column is clicked
    * 
@@ -118,4 +173,5 @@ private:
   bool on_key_press(GdkEventKey* event);
 };
 
+  
 #endif

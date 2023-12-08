@@ -127,6 +127,7 @@ Browser::Browser(Gtk::Window *Parent, string basePath, Browser *&currentBrowser,
     }
  
     ss << fixed << setprecision(2) << shorten_num << suffix;
+	
     static_cast<Gtk::CellRendererText*>(renderer)->property_text() = ss.str();
   });
   size->signal_clicked().connect([this] {
@@ -202,6 +203,41 @@ void Browser::RemoveElement(const string& name) {
   }
 }
 
+void Browser::UpdateElement(const fsutil::File &file) {
+    Gtk::TreeModel::Children rows = m_listStore->children();
+  for (auto iter = rows.begin(); iter!=rows.end(); ++iter) {
+    Gtk::TreeModel::Row row = *iter;
+    auto rowname = row[m_columns.name];
+
+    if (rowname == file.name) {
+	  row[m_columns.name] = file.name;
+	  row[m_columns.type] = file.type;
+	  row[m_columns.hardlinks] = file.hardlink;
+	  row[m_columns.size] = file.size;
+	  row[m_columns.access] = file.access;
+	  row[m_columns.lastEdited] = file.lastEdited;
+      break;
+    }
+  }
+}
+
+void Browser::ClearElements() {
+  m_listStore->clear();
+}
+
+vector<string> Browser::GetAllNames() {
+  vector<string> names_buf;
+  auto model = get_model();
+
+  names_buf.reserve(model->children().size());
+  
+  for (auto iter = model->children().begin(); iter != model->children().end(); ++iter) {
+	Glib::ustring val = (*iter)[m_columns.name];
+    names_buf.push_back(move(val));
+  }
+  return names_buf;
+}
+
 vector<string> Browser::GetSelectedNames() {
   vector<string> names_buf;
   Glib::RefPtr<Gtk::TreeSelection> selection = this->get_selection();
@@ -218,8 +254,12 @@ vector<string> Browser::GetSelectedNames() {
   return names_buf;
 }
 
-void Browser::ClearElements() {
-  m_listStore->clear();
+void Browser::DisableSorting() {
+  m_listStore->set_sort_column(Gtk::TreeSortable::DEFAULT_UNSORTED_COLUMN_ID, Gtk::SORT_ASCENDING);
+}
+
+void Browser::DefaultSorting() {
+  m_listStore->set_sort_column(m_columns.name, Gtk::SORT_ASCENDING);
 }
 
 template<typename T>

@@ -13,6 +13,7 @@
 #include "fsutil.hpp"
 #include "Modal.hpp"
 #include "Browser.hpp"
+#include "gtkmm/widget.h"
 #include "uritopath.h"
 
 using namespace std;
@@ -89,9 +90,6 @@ namespace bridge {
   void wDeleteObjects(Gtk::Window* Parent, Toolbar* tb, string source, vector<string> objectnames) {
 	
 	fsutil::OP operation = ShowDelConfirmDial(Parent);
-	size_t tb_process = tb->init_process();
-	double fraction =
-	  ceil(1.0 / objectnames.size() * PROCESS_FRACTION_PRECISION) / PROCESS_FRACTION_PRECISION;
 
     // Do not delete current dir 
     objectnames.erase(
@@ -101,6 +99,10 @@ namespace bridge {
     objectnames.erase(
       remove(objectnames.begin(), objectnames.end(), ".."), objectnames.end()
     );
+
+	size_t tb_process = tb->init_process();
+	double fraction =
+	  ceil(1.0 / objectnames.size() * PROCESS_FRACTION_PRECISION) / PROCESS_FRACTION_PRECISION;
 
 	for (const string &object : objectnames) {
 	  thread([Parent, tb, tb_process, fraction, object, source, operation]() {
@@ -130,16 +132,13 @@ namespace bridge {
 		  } catch (exception error) {
 			ShowErrDial(Parent, error.what());
 		  }
-		  tb->update_process(tb_process, fraction);
 		}
+		tb->update_process(tb_process, fraction);
 	  }).detach();
 	}
   }
 
   void wDirectCopyObjects(Gtk::Window* Parent, Toolbar* tb, string source, string destination, vector<string> objectnames, bool cut) {
-	size_t tb_process = tb->init_process();
-	double fraction =
-	  ceil(1.0 / objectnames.size() * PROCESS_FRACTION_PRECISION) / PROCESS_FRACTION_PRECISION;
     // Do not delete current dir 
     objectnames.erase(
       remove(objectnames.begin(), objectnames.end(), "."), objectnames.end()
@@ -148,6 +147,10 @@ namespace bridge {
     objectnames.erase(
       remove(objectnames.begin(), objectnames.end(), ".."), objectnames.end()
     );
+
+	size_t tb_process = tb->init_process();
+	double fraction =
+	  ceil(1.0 / objectnames.size() * PROCESS_FRACTION_PRECISION) / PROCESS_FRACTION_PRECISION;
 
 	for (const string& object : objectnames) {
 	  thread([Parent, tb, tb_process, fraction, object, source, destination, cut]() {
@@ -198,18 +201,18 @@ namespace bridge {
 	  pathentry->set_position(-1);
 
       // Disable Sorting before adding elements (otherwise the performance of the list suffers)
-      browser->m_listStore->set_sort_column(Gtk::TreeSortable::DEFAULT_UNSORTED_COLUMN_ID, Gtk::SORT_ASCENDING);
+      browser->DisableSorting();
       for (const fsutil::File& file : new_content) {
         browser->AddElement(file);
       }
       // Enable Sorting after adding elements
-      browser->m_listStore->set_sort_column(browser->m_columns.name, Gtk::SORT_ASCENDING);
+	  browser->DefaultSorting();
 
       // Initialize Filewatcher
-      fsutil::DeallocateWatcher(browser->watcher_state, browser->watcher_mutex, browser->watcher_cv);
+      fsutil::DeallocateWatcher(browser->WatchRef.WatcherState, browser->WatchRef.WatcherMutex, browser->WatchRef.WatcherCv);
       // Initialize Filewatcher
       thread t([objectpath, browser] {
-        fsutil::InitWatcher(objectpath, browser->watcher_state, browser->watcher_mutex, browser->watcher_cv,
+        fsutil::InitWatcher(objectpath, browser->WatchRef.WatcherState, browser->WatchRef.WatcherMutex, browser->WatchRef.WatcherCv,
           [browser](string filename){
             // On create
             fs::path cur_path = browser->CurrentPath;
@@ -247,8 +250,7 @@ namespace bridge {
             fsutil::File file;
             fsutil::GetFileInformation(cur_path.c_str(), file);
             Glib::signal_idle().connect_once([browser, file] {
-			  browser->RemoveElement(file.name);
-              browser->AddElement(file);
+			  browser->UpdateElement(file);
             });
           }
         );
@@ -396,9 +398,7 @@ namespace bridge {
 	vector<string> completions = vector<string>();
 
 	// Extract all values from the column and directly apply the first completor iteration
-	auto model = CurrentBrowser->get_model();
-	for (auto iter = model->children().begin(); iter != model->children().end(); ++iter) {
-	  Glib::ustring val = (*iter)[CurrentBrowser->m_columns.name];
+	for (const string& val : CurrentBrowser->GetAllNames()) {
 	  if (cur_attr[0] == val[0]) completions.push_back(val);
 	}
 
