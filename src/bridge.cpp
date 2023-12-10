@@ -215,43 +215,34 @@ namespace bridge {
         fsutil::InitWatcher(objectpath, browser->WatchRef.WatcherState, browser->WatchRef.WatcherMutex, browser->WatchRef.WatcherCv,
           [browser](string filename){
             // On create
-            fs::path cur_path = browser->CurrentPath;
-            cur_path.append(filename);
             fsutil::File file;
-            fsutil::GetFileInformation(cur_path.c_str(), file);
-            Glib::signal_idle().connect_once([browser, file] {
-			  browser->RemoveElement(file.name);
-              browser->AddElement(file);
-            });
+            fsutil::GetFileInformation((browser->CurrentPath / filename).c_str(), file);
+
+			browser->AddElement(file);
           }, [browser](string filename){
             // on delete
-            Glib::signal_idle().connect_once([browser, filename] {
-              browser->RemoveElement(filename);
-            });
+			fsutil::File file;
+            fsutil::GetFileInformation((browser->CurrentPath / filename).c_str(), file);
+
+			browser->RemoveElement(file);
           }, [browser](string filename){
             // on moved in
-            fs::path cur_path = browser->CurrentPath;
-            cur_path.append(filename);
-            fsutil::File file;
-            fsutil::GetFileInformation(cur_path.c_str(), file);
-            Glib::signal_idle().connect_once([browser, file] {
-			  browser->RemoveElement(file.name);
-              browser->AddElement(file);
-            });
+			fsutil::File file;
+            fsutil::GetFileInformation((browser->CurrentPath / filename).c_str(), file);
+
+            browser->AddElement(file);
           }, [browser](string filename){
             // on moved away
-            Glib::signal_idle().connect_once([browser, filename] {
-              browser->RemoveElement(filename);
-            });
+			fsutil::File file;
+            fsutil::GetFileInformation((browser->CurrentPath / filename).c_str(), file);
+
+			browser->RemoveElement(file);
           }, [browser](string filename){
             // on changed
-            fs::path cur_path = browser->CurrentPath;
-            cur_path.append(filename);
-            fsutil::File file;
-            fsutil::GetFileInformation(cur_path.c_str(), file);
-            Glib::signal_idle().connect_once([browser, file] {
-			  browser->UpdateElement(file);
-            });
+			fsutil::File file;
+            fsutil::GetFileInformation((browser->CurrentPath / filename).c_str(), file);
+
+			browser->UpdateElement(file);
           }
         );
       });

@@ -1,13 +1,18 @@
+#include <chrono>
 #include <gtkmm.h>
+#include <ratio>
 #include <string>
 #include <iostream>
 #include <ctime>
 #include <iomanip>
 #include <sstream>
+#include <thread>
+#include <mutex>
 
 #include "Browser.hpp"
 #include "bridge.hpp"
 #include "fsutil.hpp"
+#include "glibmm/main.h"
 
 using namespace std;
 
@@ -177,52 +182,36 @@ Browser::Browser(Gtk::Window *Parent, string basePath, Browser *&currentBrowser,
     on_header_clicked(&m_columns.lastEdited);
   });
   append_column(*lastEdited);
+
+  // Initialize Element Dispatcher
+  start_el_dispatcher(100);
+}
+
+Browser::~Browser() {
+  if (el_dispatcher_running.load())
+	el_dispatcher_running.store(false);
+  if (el_dispatcher_thread.joinable())
+	el_dispatcher_thread.join();
 }
 
 void Browser::AddElement(const fsutil::File &file) {
-  auto row = *(m_listStore->append());
-
-  row[m_columns.name] = file.name;
-  row[m_columns.type] = file.type;
-  row[m_columns.hardlinks] = file.hardlink;
-  row[m_columns.size] = file.size;
-  row[m_columns.access] = file.access;
-  row[m_columns.lastEdited] = file.lastEdited;
+  const auto el_pair = make_pair(file.name, make_pair(file, APPEND));
+  insert_el_dispatcher_queue(el_pair);
 }
 
-void Browser::RemoveElement(const string& name) {
-  Gtk::TreeModel::Children rows = m_listStore->children();
-  for (auto iter = rows.begin(); iter!=rows.end(); ++iter) {
-    Gtk::TreeModel::Row row = *iter;
-    auto rowname = row[m_columns.name];
-
-    if (rowname == name) {
-      m_listStore->erase(iter);
-      break;
-    }
-  }
+void Browser::RemoveElement(const fsutil::File& file) {
+  const auto el_pair =  make_pair(file.name, make_pair(file, DELETE));
+  insert_el_dispatcher_queue(el_pair);
 }
 
 void Browser::UpdateElement(const fsutil::File &file) {
-    Gtk::TreeModel::Children rows = m_listStore->children();
-  for (auto iter = rows.begin(); iter!=rows.end(); ++iter) {
-    Gtk::TreeModel::Row row = *iter;
-    auto rowname = row[m_columns.name];
-
-    if (rowname == file.name) {
-	  row[m_columns.name] = file.name;
-	  row[m_columns.type] = file.type;
-	  row[m_columns.hardlinks] = file.hardlink;
-	  row[m_columns.size] = file.size;
-	  row[m_columns.access] = file.access;
-	  row[m_columns.lastEdited] = file.lastEdited;
-      break;
-    }
-  }
+  const auto el_pair =  make_pair(file.name, make_pair(file, UPDATE));
+  insert_el_dispatcher_queue(el_pair);
 }
 
 void Browser::ClearElements() {
-  m_listStore->clear();
+  const auto el_pair =  make_pair("_CLEAR", make_pair(fsutil::File{}, CLEAR));
+  insert_el_dispatcher_queue(el_pair);
 }
 
 vector<string> Browser::GetAllNames() {
@@ -260,6 +249,114 @@ void Browser::DisableSorting() {
 
 void Browser::DefaultSorting() {
   m_listStore->set_sort_column(m_columns.name, Gtk::SORT_ASCENDING);
+}
+
+
+void Browser::start_el_dispatcher(int intervalms) {
+  el_dispatcher_running.store(true);
+  el_dispatcher_thread = thread([this, intervalms]() {
+	while (el_dispatcher_running.load()) {
+	  auto start = chrono::high_resolution_clock::now();
+	  {
+		lock_guard<mutex> guard(el_dispatcher_mut);
+		for (const auto& el : el_dispatcher_queue) {
+		  switch (el.second.second) {
+		  case APPEND:
+			Glib::signal_idle().connect_once([this, el] {
+			  append_el(el.second.first);
+			});
+			break;
+		  case DELETE:
+			Glib::signal_idle().connect_once([this, el] {
+			  delete_el(el.second.first);
+			});
+			break;
+		  case UPDATE:
+			Glib::signal_idle().connect_once([this, el] {
+			  update_el(el.second.first);
+			});
+			break;
+		  case CLEAR:
+			Glib::signal_idle().connect_once([this] {
+			  clear_el();
+			});
+			break;
+		  }
+		}
+
+		el_dispatcher_queue.clear();
+	  }
+
+	  auto end = chrono::high_resolution_clock::now();
+	  chrono::milliseconds elapsed = chrono::duration_cast<chrono::milliseconds>(end - start);
+	  if (intervalms > elapsed.count())  {
+		this_thread::sleep_for(chrono::milliseconds(intervalms - elapsed.count()));
+	  }
+	}
+  });
+}
+
+
+void Browser::insert_el_dispatcher_queue(const std::pair<std::string, std::pair<fsutil::File, EL_DISPATCHER_OP>> &el_pair) {
+  lock_guard<mutex> guard(el_dispatcher_mut);
+  
+  auto it = find_if(el_dispatcher_queue.begin(), el_dispatcher_queue.end(), [&el_pair](const auto& el) {
+	// Tests against the filename and the operation, omitting the file to reduce overhead
+	return el.first == el_pair.first && el.second.second == el_pair.second.second;
+  });
+  
+  if (it != el_dispatcher_queue.end())
+	*it = el_pair;
+  else
+	el_dispatcher_queue.push_back(el_pair);
+}
+
+void Browser::append_el(const fsutil::File &file) {
+  delete_el(file);
+  
+  auto row = *(m_listStore->append());
+
+  row[m_columns.name] = file.name;
+  row[m_columns.type] = file.type;
+  row[m_columns.hardlinks] = file.hardlink;
+  row[m_columns.size] = file.size;
+  row[m_columns.access] = file.access;
+  row[m_columns.lastEdited] = file.lastEdited;
+}
+
+void Browser::delete_el(const fsutil::File &file) {
+  Gtk::TreeModel::Children rows = m_listStore->children();
+  for (auto iter = rows.begin(); iter!=rows.end(); ++iter) {
+    Gtk::TreeModel::Row row = *iter;
+    auto rowname = row[m_columns.name];
+
+    if (rowname == file.name) {
+      m_listStore->erase(iter);
+      break;
+    }
+  }
+}
+
+void Browser::update_el(const fsutil::File &file) {
+  Gtk::TreeModel::Children rows = m_listStore->children();
+  for (auto iter = rows.begin(); iter!=rows.end(); ++iter) {
+    Gtk::TreeModel::Row row = *iter;
+    auto rowname = row[m_columns.name];
+
+    if (rowname == file.name) {
+	  row[m_columns.name] = file.name;
+	  row[m_columns.type] = file.type;
+	  row[m_columns.hardlinks] = file.hardlink;
+	  row[m_columns.size] = file.size;
+	  row[m_columns.access] = file.access;
+	  row[m_columns.lastEdited] = file.lastEdited;
+      break;
+    }
+  }
+}
+
+void Browser::clear_el() {
+  m_listStore->clear();
 }
 
 template<typename T>

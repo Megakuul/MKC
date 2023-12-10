@@ -8,11 +8,14 @@
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
+#include <thread>
 
 class Browser : public Gtk::TreeView {
 
 public:
   Browser(Gtk::Window *Parent, std::string basePath, Browser *&currentBrowser, Browser *remoteBrowser, Gtk::Entry *pathEntry);
+
+  ~Browser();
 
   /**
    * TreeModel for the Browser
@@ -79,22 +82,22 @@ public:
   Browser *RemoteBrowser;
 
   /**
-   * Adds an element to the Browser
+   * Schedules an element appendation to the el_dispatcher
   */
   void AddElement(const fsutil::File &file);
 
   /**
-   * Removes an element to the Browser
+   * Schedules an element deletion to the el_dispatcher
   */
-  void RemoveElement(const std::string& name);
+  void RemoveElement(const fsutil::File &file);
 
   /**
-   * Updates attributes of an element
-   */
+   * Schedules an element update to the el_dispatcher
+  */
   void UpdateElement(const fsutil::File &file);
 
   /**
-   * Clears all the elements from the Browser
+   * Schedules an full browser clear to the el_dispatcher
   */
   void ClearElements();
 
@@ -142,17 +145,61 @@ private:
     APPEND = 0,
 	DELETE = 1,
 	UPDATE = 2,
+	CLEAR = 3,
   };
+
+  /**
+   * Mutex to lock el_dispatcher_map
+  */
+  std::mutex el_dispatcher_mut;
+
+  /**
+   * Determines if the dispatcher is running, if set to false, the dispatcher is stopped
+  */
+  std::atomic<bool> el_dispatcher_running;
+
+  /**
+   * Thread that runs the dispatcher
+  */
+  std::thread el_dispatcher_thread;
   
   /**
-   * Map that holds elements to be dispatched
+   * Queue holding incomming element operations for element dispatcher
   */
-  std::map<Glib::ustring, std::pair<fsutil::File*, EL_DISPATCHER_OP>> el_dispatcher_map;
-  
+  std::vector<std::pair<std::string, std::pair<fsutil::File, EL_DISPATCHER_OP>>> el_dispatcher_queue;
+
+  /**
+   * Threadsafe inserts incomming element operations to the dispatcher queue
+   *
+   * This function will also optimize insertion, by not inputting twice the same operation
+   * if an operation is inserted that is already present, it just omits insertion and by that keeps the first operation present
+  */
+  void insert_el_dispatcher_queue(const std::pair<std::string, std::pair<fsutil::File, EL_DISPATCHER_OP>> &el_pair);
+
   /**
    * Starts a cron dispatcher that runs in an interval and updates elements
   */
   void start_el_dispatcher(int intervalms);
+
+  /**
+   * Directly appends an element to the Browser
+  */
+  void append_el(const fsutil::File &file);
+
+  /**
+   * Directly deletes an element to the Browser
+  */
+  void delete_el(const fsutil::File &file);
+
+  /**
+   * Directly updates an element to the Browser
+  */
+  void update_el(const fsutil::File &file);
+
+  /**
+   * Directly clears all elements from the Browser
+  */
+  void clear_el();
   
   /**
    * Function that is executed when a header of a column is clicked
