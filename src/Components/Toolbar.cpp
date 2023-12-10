@@ -12,7 +12,7 @@
 
 using namespace std;
 
-Toolbar::Toolbar(Gtk::Window *Parent, Browser *&CurrentBrowser)
+Toolbar::Toolbar(Gtk::Window *Parent, Gtk::Entry *Pathentry, Browser *&CurrentBrowser)
   : AFileBtn(), ADirBtn(), RnObjBtn(), DObjBtn(), RObjBtn(), CObjBtn(), MObjBtn(), SplitItem(), PMenuBtn() {
     set_name("toolbar");
 
@@ -71,8 +71,14 @@ Toolbar::Toolbar(Gtk::Window *Parent, Browser *&CurrentBrowser)
     DObjBtn.signal_clicked().connect([Parent, this, &CurrentBrowser] {
 	  bridge::wDeleteObjects(Parent, this, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
     });
-    RObjBtn.signal_clicked().connect([Parent, this, &CurrentBrowser] {
-	  bridge::wRestoreObject(Parent, this, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
+    RObjBtn.signal_clicked().connect([Parent, this, Pathentry, &CurrentBrowser] {
+	  std::filesystem::path trash_path(getenv("HOME"));
+      trash_path.append(TRASH_PATH_REL);
+	  
+	  if (CurrentBrowser->CurrentPath != trash_path) {
+		bridge::wNavigate(Parent, CurrentBrowser, Pathentry, trash_path); }
+	  else
+		bridge::wRestoreObject(Parent, this, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
     });
 	CObjBtn.signal_clicked().connect([Parent, this, &CurrentBrowser] {
 	  bridge::wDirectCopyObjects(

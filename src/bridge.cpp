@@ -1,6 +1,7 @@
 // This File contains wrappers that bridge the direct access to the filesystem (fsutil) and the frontend
 
 #include <gtkmm.h>
+#include <stdexcept>
 #include <system_error>
 #include <string>
 #include <iostream>
@@ -127,9 +128,7 @@ namespace bridge {
 		if (fs::path(object).extension() == ".mkc") {
 		  try {
 			fsutil::RecoverObject(fs::path(source) / object, operation);
-		  } catch (fs::filesystem_error fserror) {
-			ShowErrDial(Parent, fserror.what());
-		  } catch (exception error) {
+		  } catch (runtime_error error) {
 			ShowErrDial(Parent, error.what());
 		  }
 		}

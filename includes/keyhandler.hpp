@@ -12,36 +12,35 @@
 #define ADD_DIR_KEY GDK_KEY_2
 #define ADD_DIR_KEY_LB "CTRL + 2"
 
-#define RENAME_KEY GDK_KEY_3
-#define RENAME_KEY_LB "CTRL + 3"
+#define RENAME_KEY GDK_KEY_g
+#define RENAME_KEY_LB "CTRL + G"
 
-#define DELETE_KEY GDK_KEY_4
-#define DELETE_KEY_LB "CTRL + 4"
+#define DELETE_KEY GDK_KEY_BackSpace
+#define DELETE_KEY_LB "CTRL + BS"
 
-#define RECOVER_KEY GDK_KEY_5
-#define OPEN_RECOVER_KEY GDK_KEY_b
-#define RECOVER_KEY_LB "CTRL + 5\nCTRL + b (Open trash)"
+#define RECOVER_KEY GDK_KEY_b
+#define RECOVER_KEY_LB "CTRL + B"
 
 #define COPY_KEY GDK_KEY_k
-#define COPY_KEY_LB "CTRL + k"
+#define COPY_KEY_LB "CTRL + K"
 
 #define MOVE_KEY GDK_KEY_m
-#define MOVE_KEY_LB "CTRL + m"
+#define MOVE_KEY_LB "CTRL + M"
 
 #define PATHENTRY_KEY GDK_KEY_t
-#define PATHENTRY_KEY_LB "CTRL + t"
+#define PATHENTRY_KEY_LB "CTRL + T"
 
 #define BROWSER_1_KEY GDK_KEY_q
-#define BROWSER_1_KEY_LB "CTRL + q"
+#define BROWSER_1_KEY_LB "CTRL + Q"
 
 #define BROWSER_2_KEY GDK_KEY_e
-#define BROWSER_2_KEY_LB "CTRL + e"
+#define BROWSER_2_KEY_LB "CTRL + E"
 
 #define RETURN_KEY GDK_KEY_z
-#define RETURN_KEY_LB "CTRL + z"
+#define RETURN_KEY_LB "CTRL + Z"
 
 #define RUNSHELL_KEY GDK_KEY_r
-#define RUNSHELL_KEY_LB "CTRL + r"
+#define RUNSHELL_KEY_LB "CTRL + R"
 
 #define REFRESH_KEY GDK_KEY_F5
 

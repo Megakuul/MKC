@@ -1,10 +1,11 @@
 // This File contains utility functions to directly manipulate the filesystem
 
 #include <cstdlib>
-#include <fsutil.hpp>
+#include <exception>
 #include <iostream>
 #include <fstream>
 #include <filesystem>
+#include <stdexcept>
 #include <sys/inotify.h>
 #include <dirent.h>
 #include <sys/stat.h>
@@ -13,7 +14,8 @@
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
-#include <zlib.h>
+
+#include "fsutil.hpp"
 
 using namespace std;
 namespace fs = filesystem;
@@ -66,20 +68,13 @@ namespace fsutil {
 
 		fs::rename(path, path_buf);
 	  }
-	  if (operation == OP::TRASH && (fs::is_regular_file(file) || fs::is_symlink(file))) {
+	  if (operation == OP::TRASH) {
 		TrashObject(file);
 	  } else {
 		fs::remove_all(file);
 	  }
 	}
   }
-
-  // Helper function, to add extension to a path without modifying the path
-  fs::path addext(const fs::path& path, const string& extension) {
-    fs::path tmp_path = path;
-    tmp_path.concat(extension);
-    return tmp_path;
-  } 
 
   void TrashObject(const string file) {
     // Get and create the trash_path if it does not exist already
@@ -91,37 +86,15 @@ namespace fsutil {
     fs::path src_path(file);
 
     // Define the new filename in a format like {trash_path}{filename}{currenttime}
-    trash_path.append(src_path.filename().c_str());
+    trash_path.append(src_path.filename().string());
     time_t now = time(nullptr);
-    trash_path.concat(to_string(now));
-
-	
-    // Creating I/O Streams, and appending .tmp to the output file
-    ifstream in(src_path, ios::binary);
-    ofstream out(addext(trash_path,".tmp"), ios::binary);
-
-    // Creating the data vecs
-    vector<char> in_data(
-      (istreambuf_iterator<char>(in)),
-      (istreambuf_iterator<char>()));
-    vector<char> out_data(compressBound(in_data.size()));
-
-    // Compress with ZLib
-    uLongf out_size = out_data.size();
-    compress(
-      reinterpret_cast<Bytef*>(out_data.data()), &out_size,
-      reinterpret_cast<Bytef*>(in_data.data()), in_data.size());
-    
-    out.write(out_data.data(), out_size);
+    trash_path.concat(to_string(now) + ".mkc");
 
     // Set metafile that contains the source_path
-    ofstream out_meta(addext(addext(trash_path, ".mkc"), ".meta"));
+    ofstream out_meta(trash_path.string() + ".meta");
     out_meta << src_path << '\n';
 
-    // Set the file from .tmp to .mkc
-    fs::rename(addext(trash_path,".tmp"), addext(trash_path,".mkc"));
-    // Remove the old file
-	CleanObject(src_path, OP::DELETE);
+	fs::rename(src_path, trash_path);
   }
 
   void RecoverObject(const string source, OP operation) {
@@ -145,42 +118,13 @@ namespace fsutil {
         dest_str = dest_str.substr(1, dest_str.size() - 2);
       }
       dest_path = fs::path(dest_str);
-    } else {
-      /*
-        If there is not corresponding meta file
-        the decompressed file will just stay in the trash folder
-      */
-      dest_path = fs::path(source);
-      dest_path.concat(".decompressed");
-    }
+    } else throw runtime_error("No corresponding .meta file was found...");
 
 	// Recreate path if it is not existing
 	fs::create_directories(dest_path.parent_path());
 
-    ifstream in(src_path, ios::binary);
-    ofstream out(addext(dest_path,".tmp"), ios::binary);
-
-    vector<char> in_data(
-      (istreambuf_iterator<char>(in)),
-      (istreambuf_iterator<char>()));
-    // Estimated size of the decompressed version
-    vector<char> out_data(in_data.size() * 10);
-
-    uLongf out_size = out_data.size();
-    while (uncompress(
-      reinterpret_cast<Bytef*>(out_data.data()), &out_size,
-      reinterpret_cast<Bytef*>(in_data.data()), in_data.size()) == Z_BUF_ERROR) {
-      // If the estimated size is not enough, double the size
-      out_size = out_data.size() * 2;
-      out_data.resize(out_size);
-    }
-    out.write(out_data.data(), out_size);
-
-    // Rename the destination file to the original value
-	MoveObject(addext(dest_path, ".tmp"), dest_path, operation);
-
-    // Remove the metafile and the compressed file
-	CleanObject(src_path, OP::DELETE);
+	MoveObject(src_path, dest_path, operation);
+	
 	CleanObject(meta_path, OP::DELETE);
   }
 

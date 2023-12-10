@@ -12,7 +12,9 @@
 #include "Browser.hpp"
 #include "bridge.hpp"
 #include "fsutil.hpp"
-#include "glibmm/main.h"
+
+// update interval of the filebrowser in milliseconds
+#define BROWSER_UPDATE_INTERVAL 75
 
 using namespace std;
 
@@ -184,7 +186,7 @@ Browser::Browser(Gtk::Window *Parent, string basePath, Browser *&currentBrowser,
   append_column(*lastEdited);
 
   // Initialize Element Dispatcher
-  start_el_dispatcher(100);
+  start_el_dispatcher(BROWSER_UPDATE_INTERVAL);
 }
 
 Browser::~Browser() {

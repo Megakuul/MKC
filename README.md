@@ -1,6 +1,6 @@
 # Megakuul Commander
 
-A good filexplorer for Linux
+A simple filexplorer for Linux
 
 ## Install Software
 

@@ -30,14 +30,16 @@ bool HandleKeyPress(
 	case DELETE_KEY:
 	  bridge::wDeleteObjects(Parent, Toolbar, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
 	  break;
-	case RECOVER_KEY:
-	  bridge::wRestoreObject(Parent, Toolbar, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
+	case RECOVER_KEY: {
+	  std::filesystem::path trash_path(getenv("HOME"));
+      trash_path.append(TRASH_PATH_REL);
+	  
+	  if (CurrentBrowser->CurrentPath != trash_path)
+		bridge::wNavigate(Parent, CurrentBrowser, Pathentry, trash_path);
+	  else
+		bridge::wRestoreObject(Parent, Toolbar, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
 	  break;
-	case OPEN_RECOVER_KEY:
-	  bridge::wNavigate(
-		    Parent, CurrentBrowser, Pathentry,
-			std::filesystem::path(getenv("HOME")) / TRASH_PATH_REL);
-	  break;
+	}
 	case COPY_KEY:
 	  bridge::wDirectCopyObjects(
 	    Parent,

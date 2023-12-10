@@ -2,6 +2,7 @@
 
 #include "fsutil.hpp"
 #include "Modal.hpp"
+#include "gtkmm/dialog.h"
 #include "string"
 #include "iostream"
 
@@ -49,6 +50,7 @@ fsutil::OP ShowOperationDial(Gtk::Window *Parent, string files) {
   if (files!="") 
 	dial.set_secondary_text("processing:\n"+files);
 
+  dial.set_default_response(Gtk::RESPONSE_OK);
   if (dial.run() == Gtk::RESPONSE_OK) {
 	fsutil::OP operation = fsutil::NONE;
 	if (del_rad.get_active()) operation = fsutil::DELETE;
@@ -76,6 +78,7 @@ fsutil::OP ShowDelConfirmDial(Gtk::Window *Parent) {
   dial.get_message_area()->pack_start(trash_bx);
   trash_bx.show();
 
+  dial.set_default_response(Gtk::RESPONSE_OK);
   if (dial.run() == Gtk::RESPONSE_OK) {
 	if (trash_bx.get_active()) return fsutil::TRASH;
 	else return fsutil::DELETE;

@@ -7,7 +7,7 @@
 
 class Toolbar : public Gtk::Toolbar {
 public:
-  Toolbar(Gtk::Window *Parent, Browser*& CurrentBrowser);
+  Toolbar(Gtk::Window *Parent, Gtk::Entry *Pathentry, Browser*& CurrentBrowser);
 
   size_t init_process();
   void update_process(size_t id, double progress);
