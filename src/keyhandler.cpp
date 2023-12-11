@@ -40,7 +40,7 @@ bool HandleKeyPress(
 		bridge::wRestoreObject(Parent, Toolbar, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
 	  break;
 	}
-	case COPY_KEY:
+	case DIRECT_COPY_KEY:
 	  bridge::wDirectCopyObjects(
 	    Parent,
 		Toolbar,
@@ -50,7 +50,7 @@ bool HandleKeyPress(
 		false
 	  );
 	  break;
-	case MOVE_KEY:
+	case DIRECT_MOVE_KEY:
 	  bridge::wDirectCopyObjects(
 	    Parent,
 		Toolbar,
@@ -60,6 +60,15 @@ bool HandleKeyPress(
 		true
 	  );
 	  break;
+	case COPY_KEY:
+	  bridge::wHandleGnomeCopy(Parent, CurrentBrowser, false);
+	  break;
+	case CUT_KEY:
+	  bridge::wHandleGnomeCopy(Parent, CurrentBrowser, true);
+	  break;
+	case PASTE_KEY:
+	  bridge::wHandleGnomePaste(Parent, Toolbar, CurrentBrowser);
+      break;
 	case PATHENTRY_KEY:
 	  Parent->set_focus(*Pathentry);
 	  Pathentry->set_position(-1);

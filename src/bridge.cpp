@@ -7,6 +7,7 @@
 #include <iostream>
 #include <filesystem>
 #include <thread>
+#include <utility>
 #include <vector>
 #include <istream>
 
@@ -254,23 +255,26 @@ namespace bridge {
 
   void wHandleGnomeCopy(Gtk::Window* Parent, Browser* CurrentBrowser, bool cut) {
 	try {
-	  auto clipboard = Gtk::Clipboard::get();
-	  clipboard->set({Gtk::TargetEntry("x-special/gnome-copied-files")}, [CurrentBrowser, cut](Gtk::SelectionData& data, const unsigned int /* target index */) {
-		string data_buf = cut ? "cut" : "copy";
+	  string data_buf = cut ? "cut" : "copy";
 		
-		for (auto name : CurrentBrowser->GetSelectedNames()) {
-		  fs::path cur_path(CurrentBrowser->CurrentPath);
-		  cur_path.append(name);
-		  char* cur_uri = dyn_encpath(cur_path.c_str());
-		  if (!cur_uri) {
-			// If the selection contained an invalid path (not in FS format)
-			throw fs::filesystem_error("Invalid filepattern", fs::path(cur_uri), error_code());
-		  }
-
-		  data_buf += "\n";
-		  data_buf += cur_uri;
+	  for (auto name : CurrentBrowser->GetSelectedNames()) {
+		if (name == "." || name == "..") continue;
+		
+		fs::path cur_path(CurrentBrowser->CurrentPath);
+		cur_path.append(name);
+		char* cur_uri = dyn_encpath(cur_path.c_str());
+		if (!cur_uri) {
+		  // If the selection contained an invalid path (not in FS format)
+		  throw fs::filesystem_error("Invalid filepattern", fs::path(cur_uri), error_code());
 		}
 
+		data_buf += "\n";
+		data_buf += cur_uri;
+	  }
+	  
+	  auto clipboard = Gtk::Clipboard::get();
+	  clipboard->set({Gtk::TargetEntry("x-special/gnome-copied-files")},
+					 [data_buf](Gtk::SelectionData& data, const unsigned int /* target index */) {
 		data.set(data.get_target(), data_buf);
 	  }, [](){});
 
@@ -280,10 +284,10 @@ namespace bridge {
 	}
   }
 
-  void wHandleGnomePaste(Gtk::Window* Parent, Browser* CurrentBrowser) {
+  void wHandleGnomePaste(Gtk::Window* Parent, Toolbar *tb, Browser* CurrentBrowser) {
 	try {
 	  auto clipboard = Gtk::Clipboard::get();
-	  clipboard->request_contents("x-special/gnome-copied-files", [CurrentBrowser, Parent](const Gtk::SelectionData& data) {
+	  clipboard->request_contents("x-special/gnome-copied-files", [CurrentBrowser, tb, Parent](const Gtk::SelectionData& data) {
 		auto text = data.get_data_as_string();
         if (text.empty()) {
           return;
@@ -298,18 +302,18 @@ namespace bridge {
         }
 
         // Eat the files
-        string curUri;
-        /**
-         * List of files that must be overwritten
-         * First attr is the src_path the second the dest_path
-		 */
-        vector<tuple<fs::path, fs::path>> overwrites;
-        while (getline(stream, curUri)) {
+        string cur_uri;
+
+		// List for all operations
+		vector<pair<pair<fs::path, fs::path>, fsutil::OP>> operations;
+
+		// Read all operations to the operations vector
+        while (getline(stream, cur_uri)) {
           // Decode URI, the clipboard does return the filepath as html uri (e.g. file:///dir/file)
-          char* cur_path = dyn_decuri(curUri.c_str());
+          char* cur_path = dyn_decuri(cur_uri.c_str());
           if (!cur_path) {
             // If the clipboard contained an invalid path (not in URI format)
-            throw fs::filesystem_error("Invalid filepattern", fs::path(curUri), error_code());
+            throw fs::filesystem_error("Invalid filepattern", fs::path(cur_uri), error_code());
           }
 
           // Check source path
@@ -323,37 +327,39 @@ namespace bridge {
           fs::path dest_path(CurrentBrowser->CurrentPath);
           dest_path.append(src_path.filename().c_str());
 
+		  // Set default operation to SKIP
+		  fsutil::OP cur_op = fsutil::SKIP;
+		  
           // Check if the element already exists
           if (fs::exists(dest_path)) {
-            overwrites.push_back(tuple(src_path, dest_path));
-            continue;
+			cur_op = ShowOperationDial(Parent);
           }
 
-          // Run the operation
-          if (op == "cut") {
-            fsutil::MoveObject(src_path.c_str(), dest_path.c_str());
-          } else if (op == "copy") {
-            fsutil::CopyObject(src_path.c_str(), dest_path.c_str());
-          }
+		  // Add other elements
+		  operations.push_back(make_pair(make_pair(src_path, dest_path), cur_op));
         }
-		
-        // Handle duplicated elements
-        if (!overwrites.empty()) {
-          string files;
-          for (const auto& file : overwrites) {
-            files.append("\n- ");
-            files.append(get<0>(file).filename());
-          }
 
-		  fsutil::OP operation = ShowOperationDial(Parent, files);
-		  for (const auto& file : overwrites) {
-			if (op == "cut") {
-			  fsutil::MoveObject(get<0>(file).c_str(), get<1>(file).c_str(), operation);
-			} else if (op == "copy") {
-			  fsutil::CopyObject(get<0>(file).c_str(), get<1>(file).c_str(), operation);
+		// Process Operations
+
+		size_t tb_process = tb->init_process();
+		double fraction =
+		  ceil(1.0 / operations.size() * PROCESS_FRACTION_PRECISION) / PROCESS_FRACTION_PRECISION;
+
+		for (const auto& operation : operations) {
+		  thread([Parent, tb, tb_process, fraction, operation, op]() {
+			try {
+			  // Run the operation
+			  if (op == "cut") {
+				fsutil::MoveObject(operation.first.first, operation.first.second, operation.second);
+			  } else if (op == "copy") {
+				fsutil::CopyObject(operation.first.first, operation.first.second, operation.second);
+			  }
+			} catch (const fs::filesystem_error error) {
+			  ShowErrDial(Parent, error.what());
 			}
-		  }
-        }
+			tb->update_process(tb_process, fraction);
+		  }).detach();
+		}
 	  });  
 	} catch (fs::filesystem_error fserror) {
 	  ShowErrDial(Parent, fserror.what());

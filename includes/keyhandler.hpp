@@ -21,11 +21,20 @@
 #define RECOVER_KEY GDK_KEY_b
 #define RECOVER_KEY_LB "CTRL + B"
 
-#define COPY_KEY GDK_KEY_k
-#define COPY_KEY_LB "CTRL + K"
+#define DIRECT_COPY_KEY GDK_KEY_k
+#define DIRECT_COPY_KEY_LB "CTRL + K"
 
-#define MOVE_KEY GDK_KEY_m
-#define MOVE_KEY_LB "CTRL + M"
+#define DIRECT_MOVE_KEY GDK_KEY_m
+#define DIRECT_MOVE_KEY_LB "CTRL + M"
+
+#define COPY_KEY GDK_KEY_c
+#define COPY_KEY_LB "CTRL + C"
+
+#define CUT_KEY GDK_KEY_x
+#define CUT_KEY_LB "CTRL + X"
+
+#define PASTE_KEY GDK_KEY_v
+#define PASTE_KEY_LB "CTRL + V"
 
 #define PATHENTRY_KEY GDK_KEY_t
 #define PATHENTRY_KEY_LB "CTRL + T"

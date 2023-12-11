@@ -2,7 +2,6 @@
 
 #include "fsutil.hpp"
 #include "Modal.hpp"
-#include "gtkmm/dialog.h"
 #include "string"
 #include "iostream"
 

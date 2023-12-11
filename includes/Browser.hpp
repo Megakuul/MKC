@@ -4,11 +4,12 @@
 #include <gtkmm.h>
 #include <string>
 #include <filesystem>
-#include <fsutil.hpp>
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
 #include <thread>
+
+#include "fsutil.hpp"
 
 class Browser : public Gtk::TreeView {
 
@@ -136,7 +137,7 @@ protected:
    * Parent Window reference
   */
   Gtk::Window *m_parent;
-
+  
 private:
   /**
    * Operations that can be performed by the el_dispatcher
@@ -213,11 +214,6 @@ private:
    * Function that is executed when a row is activated (double click or enter)
   */
   void on_row_activated();
-
-  /**
-   * Function that is executed when a key is pressed
-  */
-  bool on_key_press(GdkEventKey* event);
 };
 
   

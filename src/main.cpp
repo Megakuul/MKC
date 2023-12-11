@@ -21,8 +21,8 @@ MainWindow::MainWindow(vector<Glib::ustring> RunCompletions) : m_MainBox(Gtk::OR
                            m_Pathentry(),
 						   m_Runentry(CurrentBrowser, RunCompletions),
                            m_SplitBox(Gtk::ORIENTATION_HORIZONTAL),
-                           m_Browser_1(this, "/", CurrentBrowser, &m_Browser_2, &m_Pathentry),
-                           m_Browser_2(this, "/", CurrentBrowser, &m_Browser_1, &m_Pathentry),
+						   m_Browser_1(this, "/", CurrentBrowser, &m_Browser_2, &m_Pathentry),
+						   m_Browser_2(this, "/", CurrentBrowser, &m_Browser_1, &m_Pathentry),
                            m_Scrollable_1(),
                            m_Scrollable_2(),
                            CurrentBrowser(&m_Browser_1) {

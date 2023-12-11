@@ -2,8 +2,9 @@
 #define TOOLBAR_H
 
 #include <gtkmm.h>
-#include <Browser.hpp>
 #include <queue>
+
+#include "Browser.hpp"
 
 class Toolbar : public Gtk::Toolbar {
 public:

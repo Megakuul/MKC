@@ -7,7 +7,6 @@
 #include "Modal.hpp"
 #include "bridge.hpp"
 #include "Browser.hpp"
-#include "gdkmm/event.h"
 #include "keyhandler.hpp"
 
 using namespace std;
@@ -34,13 +33,13 @@ Toolbar::Toolbar(Gtk::Window *Parent, Gtk::Entry *Pathentry, Browser *&CurrentBr
     RObjBtn.set_tooltip_text(RECOVER_KEY_LB);
 
     CObjBtn.set_stock_id(Gtk::Stock::COPY);
-    CObjBtn.set_tooltip_text(COPY_KEY_LB);
+    CObjBtn.set_tooltip_text(DIRECT_COPY_KEY_LB);
 	
 	MObjBtn.set_stock_id(Gtk::Stock::CUT);
-    MObjBtn.set_tooltip_text(MOVE_KEY_LB);
+    MObjBtn.set_tooltip_text(DIRECT_MOVE_KEY_LB);
 
 	MObjBtn.set_stock_id(Gtk::Stock::CUT);
-    MObjBtn.set_tooltip_text(MOVE_KEY_LB);
+    MObjBtn.set_tooltip_text(DIRECT_MOVE_KEY_LB);
 
 	PMenuBtn.set_stock_id(Gtk::Stock::GOTO_BOTTOM);
 	PMenuBtn.set_tooltip_text("Running Operations");

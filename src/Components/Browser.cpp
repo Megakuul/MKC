@@ -42,11 +42,6 @@ Browser::Browser(Gtk::Window *Parent, string basePath, Browser *&currentBrowser,
   });
   
 
-  signal_key_press_event().connect(sigc::mem_fun(
-    *this,
-    &Browser::on_key_press
-  ), false);
-
   // Name of the element
   auto* nameRenderer = Gtk::manage(new Gtk::CellRendererText());
   auto* name = Gtk::manage(new Gtk::TreeViewColumn(
@@ -371,22 +366,4 @@ void Browser::on_header_clicked(Gtk::TreeModelColumn<T>* column) {
   } else {
     m_listStore->set_sort_column(*column, Gtk::SORT_DESCENDING);
   }
-}
-
-bool Browser::on_key_press(GdkEventKey* event)
-{  
-  if (event->state & GDK_CONTROL_MASK) {
-    switch (event->keyval) {
-	case GDK_KEY_v:
-	  bridge::wHandleGnomePaste(this->m_parent, this);
-      break;
-	case GDK_KEY_c:
-	  bridge::wHandleGnomeCopy(this->m_parent, this, false);
-	  break;
-	case GDK_KEY_x:
-	  bridge::wHandleGnomeCopy(this->m_parent, this, true);
-	  break;
-    }
-  }
-  return false;
 }

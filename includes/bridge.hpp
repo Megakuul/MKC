@@ -68,7 +68,7 @@ namespace bridge {
    *
    * Fully compatible with Nautilus (Gnome) and Thunar (Xfce)
    */
-  void wHandleGnomePaste(Gtk::Window* Parent,Browser* CurrentBrowser);
+  void wHandleGnomePaste(Gtk::Window* Parent, Toolbar* tb, Browser* CurrentBrowser);
 
   /**
    * Autocompletes the last word on the provided entry based on the content of the currentbrowser
