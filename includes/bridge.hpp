@@ -14,32 +14,37 @@ namespace bridge {
   /**
    * Creates a file
    */
-  void wAddFile(Gtk::Window* Parent, std::string location);
+  void wAddFile(Gtk::Window* Parent, Browser* browser);
 
   /**
    * Creates a directory
    */
-  void wAddDir(Gtk::Window* Parent, std::string location);
+  void wAddDir(Gtk::Window* Parent, Browser* browser);
 
   /**
    * Replaces the specified string in all selected objects with the specified replacement string
    */
-  void wRenameObjects(Gtk::Window* Parent, Browser *browser, std::string location);
+  void wRenameObjects(Gtk::Window* Parent, Browser *browser);
+
+  /**
+   * Modifies attributes of all selected objects with the specified changes
+   */
+  void wModifyObjects(Gtk::Window* Parent, Browser *browser);
 
   /**
    * Cleans all files from the provided list
    */
-  void wDeleteObjects(Gtk::Window* Parent, Toolbar* tb, std::string source, std::vector<std::string> objectnames);
+  void wDeleteObjects(Gtk::Window* Parent, Toolbar* tb, Browser* browser);
 
   /**
    * Restores all '.mkc' files from the provided list
    */
-  void wRestoreObject(Gtk::Window* Parent, Toolbar* tb, std::string source, std::vector<std::string> objectnames);
+  void wRestoreObject(Gtk::Window* Parent, Toolbar* tb, Browser* browser);
 
   /**
    * Copies all selected files from the current-browser to the other browser
    */
-  void wDirectCopyObjects(Gtk::Window* Parent, Toolbar* tb, std::string source, std::string destination, std::vector<std::string> objectname, bool cut);
+  void wDirectCopyObjects(Gtk::Window* Parent, Toolbar* tb, Browser* browser, bool cut);
 
   /**
    * Open element with default application in a detached process

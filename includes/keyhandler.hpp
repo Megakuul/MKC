@@ -12,20 +12,23 @@
 #define ADD_DIR_KEY GDK_KEY_2
 #define ADD_DIR_KEY_LB "CTRL + 2"
 
-#define RENAME_KEY GDK_KEY_g
-#define RENAME_KEY_LB "CTRL + G"
+#define RENAME_KEY GDK_KEY_3
+#define RENAME_KEY_LB "CTRL + 3"
 
-#define DELETE_KEY GDK_KEY_BackSpace
-#define DELETE_KEY_LB "CTRL + BS"
-
-#define RECOVER_KEY GDK_KEY_b
-#define RECOVER_KEY_LB "CTRL + B"
+#define MODIFY_KEY GDK_KEY_4
+#define MODIFY_KEY_LB "CTRL + 4"
 
 #define DIRECT_COPY_KEY GDK_KEY_k
 #define DIRECT_COPY_KEY_LB "CTRL + K"
 
 #define DIRECT_MOVE_KEY GDK_KEY_m
 #define DIRECT_MOVE_KEY_LB "CTRL + M"
+
+#define DELETE_KEY GDK_KEY_BackSpace
+#define DELETE_KEY_LB "CTRL + BS"
+
+#define RECOVER_KEY GDK_KEY_b
+#define RECOVER_KEY_LB "CTRL + B"
 
 #define COPY_KEY GDK_KEY_c
 #define COPY_KEY_LB "CTRL + C"

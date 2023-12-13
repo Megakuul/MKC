@@ -19,16 +19,16 @@ bool HandleKeyPress(
   if (event->state & GDK_CONTROL_MASK) {
 	switch (event->keyval) {
 	case ADD_FILE_KEY:
-	  bridge::wAddFile(Parent, CurrentBrowser->CurrentPath);
+	  bridge::wAddFile(Parent, CurrentBrowser);
 	  break;
 	case ADD_DIR_KEY:
-	  bridge::wAddDir(Parent, CurrentBrowser->CurrentPath);
+	  bridge::wAddDir(Parent, CurrentBrowser);
 	  break;
 	case RENAME_KEY:
-	  bridge::wRenameObjects(Parent, CurrentBrowser, CurrentBrowser->CurrentPath);
+	  bridge::wRenameObjects(Parent, CurrentBrowser);
 	  break;
 	case DELETE_KEY:
-	  bridge::wDeleteObjects(Parent, Toolbar, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
+	  bridge::wDeleteObjects(Parent, Toolbar, CurrentBrowser);
 	  break;
 	case RECOVER_KEY: {
 	  std::filesystem::path trash_path(getenv("HOME"));
@@ -37,28 +37,17 @@ bool HandleKeyPress(
 	  if (CurrentBrowser->CurrentPath != trash_path)
 		bridge::wNavigate(Parent, CurrentBrowser, Pathentry, trash_path);
 	  else
-		bridge::wRestoreObject(Parent, Toolbar, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
+		bridge::wRestoreObject(Parent, Toolbar, CurrentBrowser);
 	  break;
 	}
 	case DIRECT_COPY_KEY:
-	  bridge::wDirectCopyObjects(
-	    Parent,
-		Toolbar,
-		CurrentBrowser->CurrentPath,
-		CurrentBrowser->RemoteBrowser->CurrentPath,
-		CurrentBrowser->GetSelectedNames(),
-		false
-	  );
+	  bridge::wDirectCopyObjects(Parent, Toolbar, CurrentBrowser, false);
 	  break;
 	case DIRECT_MOVE_KEY:
-	  bridge::wDirectCopyObjects(
-	    Parent,
-		Toolbar,
-		CurrentBrowser->CurrentPath,
-		CurrentBrowser->RemoteBrowser->CurrentPath,
-		CurrentBrowser->GetSelectedNames(),
-		true
-	  );
+	  bridge::wDirectCopyObjects(Parent, Toolbar, CurrentBrowser, true);
+	  break;
+	case MODIFY_KEY:
+	  bridge::wModifyObjects(Parent, CurrentBrowser);
 	  break;
 	case COPY_KEY:
 	  bridge::wHandleGnomeCopy(Parent, CurrentBrowser, false);

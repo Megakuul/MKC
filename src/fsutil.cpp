@@ -9,6 +9,8 @@
 #include <sys/inotify.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <pwd.h>
+#include <grp.h>
 #include <unistd.h>
 #include <functional>
 #include <atomic>
@@ -36,24 +38,46 @@ namespace fsutil {
 
     fs::create_directories(path_buf);
   }
-  
-  void DeleteObjects(string directory, vector<string> objects, OP operation) {
-	for (const string &object : objects) {
-	  fs::path path_buf(directory);
-	  path_buf.append(object);
-	  CleanObject(path_buf, operation);
+
+  void ModifyObject(string source, FileMod modifications) {
+	if (!fs::exists(source)) {
+	  throw runtime_error("Failed to modify object: Object not found!");
+	}
+	
+	if (!modifications.access.empty()) {
+	  size_t octal_permission = stoi(modifications.access, nullptr, 8);
+	  mode_t mode = static_cast<mode_t>(octal_permission);
+
+	  if (chmod(source.c_str(), mode) == -1) {
+		throw runtime_error("Failed to modify object: Cannot modify access!");
+	  }
+	}
+
+	if (!modifications.owner_user.empty() || !modifications.owner_group.empty()) {
+	   
+	  struct passwd *pw = getpwnam(modifications.owner_user.c_str());
+	  if (!pw) {
+		throw runtime_error("Failed to modify object: User not found!");
+	  }
+	  struct group *gr = getgrnam(modifications.owner_group.c_str());
+	  if (!gr) {
+		throw runtime_error("Failed to modify object: Group not found!");
+	  }
+
+	  if (chown(source.c_str(), pw->pw_uid, gr->gr_gid) == -1) {
+		throw runtime_error("Failed to modify object: Cannot modify owner!");
+	  }
 	}
   }
-
   
-  void CleanObject(string file, OP operation) {
+  void CleanObject(string source, OP operation) {
 	if (operation==OP::NONE||operation==OP::SKIP||operation==OP::ERROR) {
 	  return;
 	}
-	if (fs::exists(file)) {
+	if (fs::exists(source)) {
 	  if (operation == OP::RENAME) {
 		size_t version = 1;
-		fs::path path(file);
+		fs::path path(source);
 
 		string path_base = path.parent_path() / path.stem();
 		string path_ext = path.extension();
@@ -69,9 +93,9 @@ namespace fsutil {
 		fs::rename(path, path_buf);
 	  }
 	  if (operation == OP::TRASH) {
-		TrashObject(file);
+		TrashObject(source);
 	  } else {
-		fs::remove_all(file);
+		fs::remove_all(source);
 	  }
 	}
   }
@@ -118,7 +142,7 @@ namespace fsutil {
         dest_str = dest_str.substr(1, dest_str.size() - 2);
       }
       dest_path = fs::path(dest_str);
-    } else throw runtime_error("No corresponding .meta file was found...");
+    } else throw runtime_error("Failed to recover object: Corresponding .meta file not found!");
 
 	// Recreate path if it is not existing
 	fs::create_directories(dest_path.parent_path());
@@ -151,7 +175,7 @@ namespace fsutil {
   void GetFilesFromDirectory(const string &location, vector<File> &files) {
     DIR* dir = opendir(location.c_str());
     if (dir == nullptr) {
-      throw runtime_error("Failed to read content: [" + location + "]");
+      throw runtime_error("Failed to list files: Cannot read content of\n - " + location);
     }
 
     struct dirent* entry;
@@ -197,7 +221,23 @@ namespace fsutil {
       int other = stat_buf.st_mode & S_IRWXO;
       file.access = to_string(user * 100 + group * 10 + other);
     }
+	file.owner_uid = stat_buf.st_uid;
+	file.owner_gid = stat_buf.st_gid;
     file.lastEdited = stat_buf.st_mtime;
+  }
+
+  void GetFileOwner(File &file, string &owner) {
+	struct passwd *pw = getpwuid(file.owner_uid);
+	if (!pw) {
+	  throw runtime_error("Failed to get owner: UID not found!");
+	}
+	
+	struct group *gr = getgrgid(file.owner_gid);
+	if (!gr) {
+	  throw runtime_error("Failed to get owner: GID not found!");
+	}
+
+	owner = string(pw->pw_name) + ":" + string(gr->gr_name);
   }
 
   void DeallocateWatcher(atomic<bool> &state, mutex &state_mutex, condition_variable &state_cv) {

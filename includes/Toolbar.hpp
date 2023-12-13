@@ -15,13 +15,14 @@ public:
 
 protected:
   // Left Items
-  Gtk::ToolButton AFileBtn;
-  Gtk::ToolButton ADirBtn;
-  Gtk::ToolButton RnObjBtn;
-  Gtk::ToolButton DObjBtn;
-  Gtk::ToolButton RObjBtn;
-  Gtk::ToolButton CObjBtn;
-  Gtk::ToolButton MObjBtn;
+  Gtk::ToolButton AddFileBtn;
+  Gtk::ToolButton AddDirBtn;
+  Gtk::ToolButton RenameObjBtn;
+  Gtk::ToolButton ModifyObjBtn;
+  Gtk::ToolButton CopyObjBtn;
+  Gtk::ToolButton MoveObjBtn;
+  Gtk::ToolButton DeleteObjBtn;
+  Gtk::ToolButton RecoverObjBtn;
 
   // Splits the section in half (right and left items) by full expanding
   Gtk::ToolItem SplitItem;

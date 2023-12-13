@@ -12,93 +12,83 @@
 using namespace std;
 
 Toolbar::Toolbar(Gtk::Window *Parent, Gtk::Entry *Pathentry, Browser *&CurrentBrowser)
-  : AFileBtn(), ADirBtn(), RnObjBtn(), DObjBtn(), RObjBtn(), CObjBtn(), MObjBtn(), SplitItem(), PMenuBtn() {
+  : AddFileBtn(), AddDirBtn(), RenameObjBtn(), DeleteObjBtn(), RecoverObjBtn(), CopyObjBtn(), MoveObjBtn(), ModifyObjBtn(), SplitItem(), PMenuBtn() {
     set_name("toolbar");
 
 	dispatcher.connect(sigc::mem_fun(*this, &Toolbar::on_process_map_update));
     
-    AFileBtn.set_stock_id(Gtk::Stock::FILE);
-    AFileBtn.set_tooltip_text(ADD_FILE_KEY_LB);
+    AddFileBtn.set_stock_id(Gtk::Stock::FILE);
+    AddFileBtn.set_tooltip_text(ADD_FILE_KEY_LB);
 
-    ADirBtn.set_stock_id(Gtk::Stock::DIRECTORY);
-    ADirBtn.set_tooltip_text(ADD_DIR_KEY_LB);
+    AddDirBtn.set_stock_id(Gtk::Stock::DIRECTORY);
+    AddDirBtn.set_tooltip_text(ADD_DIR_KEY_LB);
 
-	RnObjBtn.set_stock_id(Gtk::Stock::CONVERT);
-	RnObjBtn.set_tooltip_text(RENAME_KEY_LB);
+	RenameObjBtn.set_stock_id(Gtk::Stock::CONVERT);
+	RenameObjBtn.set_tooltip_text(RENAME_KEY_LB);
 
-    DObjBtn.set_stock_id(Gtk::Stock::DELETE);
-    DObjBtn.set_tooltip_text(DELETE_KEY_LB);
+	ModifyObjBtn.set_stock_id(Gtk::Stock::EDIT);
+	ModifyObjBtn.set_tooltip_text(MODIFY_KEY_LB);
 
-    RObjBtn.set_stock_id(Gtk::Stock::UNDELETE);
-    RObjBtn.set_tooltip_text(RECOVER_KEY_LB);
-
-    CObjBtn.set_stock_id(Gtk::Stock::COPY);
-    CObjBtn.set_tooltip_text(DIRECT_COPY_KEY_LB);
+	CopyObjBtn.set_stock_id(Gtk::Stock::COPY);
+    CopyObjBtn.set_tooltip_text(DIRECT_COPY_KEY_LB);
 	
-	MObjBtn.set_stock_id(Gtk::Stock::CUT);
-    MObjBtn.set_tooltip_text(DIRECT_MOVE_KEY_LB);
+	MoveObjBtn.set_stock_id(Gtk::Stock::CUT);
+    MoveObjBtn.set_tooltip_text(DIRECT_MOVE_KEY_LB);
 
-	MObjBtn.set_stock_id(Gtk::Stock::CUT);
-    MObjBtn.set_tooltip_text(DIRECT_MOVE_KEY_LB);
+    DeleteObjBtn.set_stock_id(Gtk::Stock::DELETE);
+    DeleteObjBtn.set_tooltip_text(DELETE_KEY_LB);
+
+    RecoverObjBtn.set_stock_id(Gtk::Stock::UNDELETE);
+    RecoverObjBtn.set_tooltip_text(RECOVER_KEY_LB);
 
 	PMenuBtn.set_stock_id(Gtk::Stock::GOTO_BOTTOM);
 	PMenuBtn.set_tooltip_text("Running Operations");
 
 	SplitItem.set_expand(true);
     
-    add(AFileBtn);
-    add(ADirBtn);
-	add(RnObjBtn);
-    add(DObjBtn);
-    add(RObjBtn);
-	add(CObjBtn);
-	add(MObjBtn);
+    add(AddFileBtn);
+    add(AddDirBtn);
+	add(RenameObjBtn);
+	add(ModifyObjBtn);
+	add(CopyObjBtn);
+	add(MoveObjBtn);
+    add(DeleteObjBtn);
+	add(RecoverObjBtn);
 
 	add(SplitItem);
 	
 	add(PMenuBtn);
 
-    AFileBtn.signal_clicked().connect([Parent, &CurrentBrowser] {
-	  bridge::wAddFile(Parent, CurrentBrowser->CurrentPath);
+    AddFileBtn.signal_clicked().connect([Parent, &CurrentBrowser] {
+	  bridge::wAddFile(Parent, CurrentBrowser);
     });
-    ADirBtn.signal_clicked().connect([Parent, &CurrentBrowser] {
-	  bridge::wAddDir(Parent, CurrentBrowser->CurrentPath);
+    AddDirBtn.signal_clicked().connect([Parent, &CurrentBrowser] {
+	  bridge::wAddDir(Parent, CurrentBrowser);
     });
-	RnObjBtn.signal_clicked().connect([Parent, &CurrentBrowser] {
-	  bridge::wRenameObjects(Parent, CurrentBrowser, CurrentBrowser->CurrentPath);
+	RenameObjBtn.signal_clicked().connect([Parent, &CurrentBrowser] {
+	  bridge::wRenameObjects(Parent, CurrentBrowser);
 	});
-    DObjBtn.signal_clicked().connect([Parent, this, &CurrentBrowser] {
-	  bridge::wDeleteObjects(Parent, this, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
+	ModifyObjBtn.signal_clicked().connect([Parent, &CurrentBrowser] {
+	  bridge::wModifyObjects(Parent, CurrentBrowser);
+	});
+	CopyObjBtn.signal_clicked().connect([Parent, this, &CurrentBrowser] {
+	  bridge::wDirectCopyObjects(Parent, this, CurrentBrowser, false);
+	});
+	MoveObjBtn.signal_clicked().connect([Parent, this, &CurrentBrowser] {
+	  bridge::wDirectCopyObjects(Parent, this, CurrentBrowser, true);
+	});
+    DeleteObjBtn.signal_clicked().connect([Parent, this, &CurrentBrowser] {
+	  bridge::wDeleteObjects(Parent, this, CurrentBrowser);
     });
-    RObjBtn.signal_clicked().connect([Parent, this, Pathentry, &CurrentBrowser] {
+    RecoverObjBtn.signal_clicked().connect([Parent, this, Pathentry, &CurrentBrowser] {
 	  std::filesystem::path trash_path(getenv("HOME"));
       trash_path.append(TRASH_PATH_REL);
 	  
 	  if (CurrentBrowser->CurrentPath != trash_path) {
 		bridge::wNavigate(Parent, CurrentBrowser, Pathentry, trash_path); }
 	  else
-		bridge::wRestoreObject(Parent, this, CurrentBrowser->CurrentPath, CurrentBrowser->GetSelectedNames());
+		bridge::wRestoreObject(Parent, this, CurrentBrowser);
     });
-	CObjBtn.signal_clicked().connect([Parent, this, &CurrentBrowser] {
-	  bridge::wDirectCopyObjects(
-	    Parent,
-		this,
-		CurrentBrowser->CurrentPath,
-		CurrentBrowser->RemoteBrowser->CurrentPath,
-		CurrentBrowser->GetSelectedNames(),
-		false
-	  );
-	});
-	MObjBtn.signal_clicked().connect([Parent, this, &CurrentBrowser] {
-	  bridge::wDirectCopyObjects(
-	    Parent,
-		this,
-		CurrentBrowser->CurrentPath,
-		CurrentBrowser->RemoteBrowser->CurrentPath,
-		CurrentBrowser->GetSelectedNames(),
-		true
-	  );
-	});
 	PMenuBtn.signal_clicked().connect([this] {
 	  PMenu.popup_at_widget(&PMenuBtn, Gdk::GRAVITY_SOUTH_EAST, Gdk::GRAVITY_NORTH_EAST, nullptr);
 	});

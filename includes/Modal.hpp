@@ -14,6 +14,14 @@
 std::string ShowInputDial(Gtk::Window *Parent, std::string label);
 
 /**
+ * Creates a dialog to modify a files attributes
+ * @param Parent window to draw the dialog
+ * @param ex_access Example Access that is filled into the dialog
+ * @param ex_owner Example Owner that is filled into the dialog
+ */
+fsutil::FileMod ShowModificationDial(Gtk::Window *Parent, std::string ex_access, std::string ex_owner);
+
+/**
  * Creates a dialog for selecting the operation
  * @param Parent window to draw the dialog
  * @param files that are processed by the operation

@@ -7,6 +7,7 @@
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
+#include <sys/types.h>
 
 // Location of the trash relative to $HOME
 #define TRASH_PATH_REL ".mkc/trash"
@@ -17,6 +18,8 @@
  * 
  * For tasks that do not require a lot of power the crossplatform filesystems API is used.
  * The heavy lifting is done by linux sys librarys.
+ *
+ * fsutil functions / operations do not catch anything and throw runtime_errors() on errors
 */
 namespace fsutil {
 
@@ -29,7 +32,18 @@ namespace fsutil {
     int hardlink;
     off_t size;
     std::string access;
+	uid_t owner_uid;
+	gid_t owner_gid;
     time_t lastEdited;
+  };
+
+  /**
+   * Represents a File with the properties that can be manipulated by the user
+  */
+  struct FileMod {
+	std::string access;
+	std::string owner_user;
+	std::string owner_group;
   };
 
   /**
@@ -62,27 +76,40 @@ namespace fsutil {
   void AddDir(std::string directory, std::string name);
 
   /**
-   * Puts an object into the mkc trash (and compresses it)
-   * @param source Object path
+   * Modifies attributes of a file specified in the FileMod
+   *
+   * If modification fields are left "", they are not modified
+   * @param source Object source path
+   * @param modifications Mods to apply to the object
+  */
+  void ModifyObject(std::string source, FileMod modifications);
+
+  /**
+   * Moves a object to the trash and generates a meta file to recover it
+   * @param source Object source path
   */
   void TrashObject(const std::string source);
 
   /**
-   * Puts a compressed object back into its original form
+   * Moves a object from the trash to its original position (and generates the directories if necessary)
    * @param source Object path
+   * @param operation Operation executed when files conflict
   */
   void RecoverObject(const std::string source, OP operation=OP::ERROR);
 
   /**
    * Removes a file or directory (recursively) from the current location with the specified operation
+   * @param source Object source path
+   * @param operation Operation executed when files conflict
   */
-  void CleanObject(std::string file, OP operation);
+  void CleanObject(std::string source, OP operation);
 
 
   /**
    * Copies an object
    * @param source source path
    * @param destination destination path
+   * @param operation Operation executed when files conflict
   */
   void CopyObject(std::string source, std::string destination, OP operation=OP::ERROR);
 
@@ -91,9 +118,15 @@ namespace fsutil {
    * Moves an object
    * @param source source path
    * @param destination destination path
+   * @param operation Operation executed when files conflict
   */
   void MoveObject(std::string source, std::string destination, OP operation=OP::ERROR);
-  
+
+  /**
+   * Writes all files from a directory to the files vector
+   * @param location Directory to list
+   * @param files Reference vector that will be filled up with File structs
+  */
   void GetFilesFromDirectory(const std::string &location, std::vector<File> &files);
 
   /**
@@ -103,8 +136,18 @@ namespace fsutil {
    * This function uses the sys/stats library to directly access the files without overhead,
    * it is only working on Linux
    * @param location Path of the file
+   * @param files Reference to File struct that will be filled up
   */
   void GetFileInformation(const std::string &location, File &file);
+
+  /**
+   * Fetches the username and groupname from uid/gid provided in the file
+   * and parses it in the common format 'username:groupname'
+   *
+   * @param file File struct to read the owner from
+   * @param owner Reference to string that will be filled up
+  */
+  void GetFileOwner(File &file, std::string &owner);
 
   /**
    * Initializes a Filewatcher

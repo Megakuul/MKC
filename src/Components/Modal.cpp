@@ -2,6 +2,8 @@
 
 #include "fsutil.hpp"
 #include "Modal.hpp"
+#include "gtkmm/alignment.h"
+#include "pangomm/fontdescription.h"
 #include "string"
 #include "iostream"
 
@@ -23,6 +25,46 @@ string ShowInputDial(Gtk::Window *Parent, string label) {
 	return input.get_text();
   } else
 	return "";
+}
+
+fsutil::FileMod ShowModificationDial(Gtk::Window *Parent, string ex_access, string ex_owner) {
+  Gtk::MessageDialog dial(*Parent, "Modify Objects", false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_OK_CANCEL);
+
+  Gtk::Entry access_entry;
+  access_entry.set_alignment(Gtk::Align::ALIGN_CENTER);
+  access_entry.set_placeholder_text("Access Number");
+  access_entry.set_text(ex_access);
+  dial.get_message_area()->pack_start(access_entry);
+  access_entry.show();
+
+  Gtk::Entry owner_entry;
+  owner_entry.set_alignment(Gtk::Align::ALIGN_CENTER);
+  owner_entry.set_placeholder_text("Owner");
+  owner_entry.set_text(ex_owner);
+  dial.get_message_area()->pack_start(owner_entry);
+  owner_entry.show();
+
+
+  dial.set_default_response(Gtk::RESPONSE_OK);
+  if (dial.run() == Gtk::RESPONSE_OK) {
+	// Parse owner (format user:group)
+	string owner_user;
+	string owner_group;
+	string owner_str = owner_entry.get_text();
+	size_t pos = owner_str.find(':');
+	if (pos!=string::npos) {
+	  owner_user = owner_str.substr(0, pos);
+	  owner_group = owner_str.substr(pos+1);
+	}
+	// Return FileMod
+	return {
+	 access_entry.get_text(),
+	 owner_user,
+	 owner_group
+	};
+  } else
+	// Return empty FileMod this will lead to no modification
+	return {};
 }
 
 fsutil::OP ShowOperationDial(Gtk::Window *Parent, string files) {

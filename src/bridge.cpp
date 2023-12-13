@@ -1,5 +1,6 @@
 // This File contains wrappers that bridge the direct access to the filesystem (fsutil) and the frontend
 
+#include <exception>
 #include <gtkmm.h>
 #include <stdexcept>
 #include <system_error>
@@ -25,7 +26,8 @@ namespace fs = filesystem;
 
 namespace bridge {
   
-  void wAddFile(Gtk::Window* Parent, string location) {
+  void wAddFile(Gtk::Window* Parent, Browser *browser) {
+	string location = browser->CurrentPath;
 	
     string filename = ShowInputDial(Parent, "Create File");
 	if (filename.empty() || filename==" ") {
@@ -39,12 +41,13 @@ namespace bridge {
 		}
 	  }
       fsutil::AddFile(location, filename);
-    } catch (const fs::filesystem_error error) {
-	  ShowErrDial(Parent, error.what());
+    } catch (const exception &e) {
+	  ShowErrDial(Parent, e.what());
     }
   }
 
-  void wAddDir(Gtk::Window* Parent, string location) {
+  void wAddDir(Gtk::Window* Parent, Browser *browser) {
+	string location = browser->CurrentPath;
 	
 	string dirname = ShowInputDial(Parent, "Create Directory");
 	if (dirname.empty() || dirname==" ") {
@@ -52,13 +55,16 @@ namespace bridge {
 	}
 
     try {
-      fsutil::AddDir(location, dirname);
-    } catch (fs::filesystem_error error) {
-	  ShowErrDial(Parent, error.what());
+      fsutil::AddDir(browser->CurrentPath, dirname);
+    } catch (exception e) {
+	  ShowErrDial(Parent, e.what());
     }
   }
 
-  void wRenameObjects(Gtk::Window* Parent, Browser *browser, string location) {
+  void wRenameObjects(Gtk::Window* Parent, Browser *browser) {
+	string location = browser->CurrentPath;
+	vector<string> objectnames = browser->GetSelectedNames();
+	
 	try {
 	  string srcstr = ShowInputDial(Parent, "Source String");
 	  if (srcstr.empty()) {
@@ -72,7 +78,7 @@ namespace bridge {
 
 	  fs::path origin_path(location);
 
-	  for (string name : browser->GetSelectedNames()) {
+	  for (string name : objectnames) {
 		size_t pos = name.find(srcstr);
 		if (pos == string::npos) continue;
 
@@ -84,12 +90,42 @@ namespace bridge {
 		
 		fsutil::MoveObject(src_path, dest_path, fsutil::SKIP);
 	  }
-	} catch (fs::filesystem_error error) {
-	  ShowErrDial(Parent, error.what());
+	} catch (exception &e) {
+	  ShowErrDial(Parent, e.what());
     }
   }
 
-  void wDeleteObjects(Gtk::Window* Parent, Toolbar* tb, string source, vector<string> objectnames) {
+  void wModifyObjects(Gtk::Window* Parent, Browser *browser) {
+	string source = browser->CurrentPath;
+	vector<string> objectnames = browser->GetSelectedNames();
+	if (objectnames.empty()) return;
+
+	fsutil::FileMod mods;
+	try {
+	  // Get data from first file as "example" data for the dialog
+	  fsutil::File initfile;
+	  string owner;
+	  
+	  fsutil::GetFileInformation(fs::path(source) / objectnames[0], initfile);
+	  fsutil::GetFileOwner(initfile, owner);
+
+	  // Launch user dialog to get modifications
+	  mods = ShowModificationDial(Parent, initfile.access, owner);
+
+	  	
+	  // Execute modification for all selected files
+	  for (string name : objectnames) {
+		string cur_src = fs::path(source) / name;
+		fsutil::ModifyObject(cur_src, mods);
+	  }
+	} catch (exception &e) {
+	  ShowErrDial(Parent, e.what());
+	}
+  }
+
+  void wDeleteObjects(Gtk::Window* Parent, Toolbar* tb, Browser *browser) {
+	string source = browser->CurrentPath;
+	vector<string> objectnames = browser->GetSelectedNames();
 	
 	fsutil::OP operation = ShowDelConfirmDial(Parent);
 
@@ -110,15 +146,18 @@ namespace bridge {
 	  thread([Parent, tb, tb_process, fraction, object, source, operation]() {
 		try {
 		  CleanObject(fs::path(source) / object, operation);
-		} catch (const fs::filesystem_error error) {
-		  ShowErrDial(Parent, error.what());
+		} catch (const exception &e) {
+		  ShowErrDial(Parent, e.what());
 		}
 		tb->update_process(tb_process, fraction);
 	  }).detach();
 	}
   }
 
-  void wRestoreObject(Gtk::Window* Parent, Toolbar* tb, string source, vector<string> objectnames) {
+  void wRestoreObject(Gtk::Window* Parent, Toolbar* tb, Browser* browser) {
+	string source = browser->CurrentPath;
+	vector<string> objectnames = browser->GetSelectedNames();
+	
 	fsutil::OP operation = ShowOperationDial(Parent);
 	size_t tb_process = tb->init_process();
 	double fraction =
@@ -129,8 +168,8 @@ namespace bridge {
 		if (fs::path(object).extension() == ".mkc") {
 		  try {
 			fsutil::RecoverObject(fs::path(source) / object, operation);
-		  } catch (runtime_error error) {
-			ShowErrDial(Parent, error.what());
+		  } catch (exception &e) {
+			ShowErrDial(Parent, e.what());
 		  }
 		}
 		tb->update_process(tb_process, fraction);
@@ -138,7 +177,11 @@ namespace bridge {
 	}
   }
 
-  void wDirectCopyObjects(Gtk::Window* Parent, Toolbar* tb, string source, string destination, vector<string> objectnames, bool cut) {
+  void wDirectCopyObjects(Gtk::Window* Parent, Toolbar* tb, Browser* browser, bool cut) {
+	string source = browser->CurrentPath;
+	string destination = browser->RemoteBrowser->CurrentPath;
+	vector<string> objectnames = browser->GetSelectedNames();
+	
     // Do not delete current dir 
     objectnames.erase(
       remove(objectnames.begin(), objectnames.end(), "."), objectnames.end()
@@ -160,8 +203,8 @@ namespace bridge {
 		
 		  if (cut) fsutil::MoveObject(src_buf, dest_buf, fsutil::SKIP);
 		  else fsutil::CopyObject(src_buf, dest_buf, fsutil::SKIP); 
-		} catch (const fs::filesystem_error error) {
-		  ShowErrDial(Parent, error.what());
+		} catch (const exception &e) {
+		  ShowErrDial(Parent, e.what());
 		}
 		tb->update_process(tb_process, fraction);
 	  }).detach();
@@ -247,8 +290,8 @@ namespace bridge {
         );
       });
       t.detach();
-    } catch (const runtime_error error) {
-	  ShowErrDial(Parent, error.what());
+    } catch (const exception &e) {
+	  ShowErrDial(Parent, e.what());
     }
   }
 
@@ -279,8 +322,8 @@ namespace bridge {
 	  }, [](){});
 
 	  clipboard->store();
-	} catch (fs::filesystem_error fserror) {
-	  ShowErrDial(Parent, fserror.what());
+	} catch (exception &e) {
+	  ShowErrDial(Parent, e.what());
 	}
   }
 
@@ -354,15 +397,15 @@ namespace bridge {
 			  } else if (op == "copy") {
 				fsutil::CopyObject(operation.first.first, operation.first.second, operation.second);
 			  }
-			} catch (const fs::filesystem_error error) {
-			  ShowErrDial(Parent, error.what());
+			} catch (const exception &e) {
+			  ShowErrDial(Parent, e.what());
 			}
 			tb->update_process(tb_process, fraction);
 		  }).detach();
 		}
 	  });  
-	} catch (fs::filesystem_error fserror) {
-	  ShowErrDial(Parent, fserror.what());
+	} catch (exception &e) {
+	  ShowErrDial(Parent, e.what());
 	}
   }
 
