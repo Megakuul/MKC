@@ -7,6 +7,7 @@
 
 #include "Browser.hpp"
 #include "Toolbar.hpp"
+#include "gdkmm/rectangle.h"
 
 namespace bridge {
 
@@ -47,9 +48,14 @@ namespace bridge {
   void wDirectCopyObjects(Gtk::Window* Parent, Toolbar* tb, Browser* browser, bool cut);
 
   /**
-   * Open element with default application in a detached process
+   * Open object with xdg-open (detached process)
    */
-  void wOpenObject(std::string filepath);
+  void wOpenObjectDefault(std::string object);
+
+  /**
+   * Open object with a custom operation specified in a popover run dialog (detached process)
+   */
+  void wOpenObjectRun(Gtk::Widget* Parent, Gdk::Rectangle* rect, std::string object);
 
   /**
    * Changes the active/current directory for the provided browser

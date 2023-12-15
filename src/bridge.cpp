@@ -16,6 +16,7 @@
 #include "fsutil.hpp"
 #include "Modal.hpp"
 #include "Browser.hpp"
+#include "gdkmm/rectangle.h"
 #include "gtkmm/widget.h"
 #include "uritopath.h"
 
@@ -211,15 +212,19 @@ namespace bridge {
 	}
   }
   
-  void wOpenObject(string path) {
+  void wOpenObjectDefault(string object) {
 	pid_t pid = fork();
 	if (pid == 0) {
 	  setsid();
 
-	  execl("/usr/bin/xdg-open", "xdg-open", path.c_str(), (char*) NULL);
+	  execl("/usr/bin/xdg-open", "xdg-open", object.c_str(), (char*) NULL);
 
 	  std::exit(EXIT_FAILURE);
 	}
+  }
+
+  void wOpenObjectRun(Gtk::Widget* Parent, Gdk::Rectangle* rect, std::string object) {
+	ShowRunDial(*Parent, *rect, object);
   }
   
   void wChangeBrowser(Gtk::Window* mainWindow, Browser* newBrowser) {
@@ -231,7 +236,7 @@ namespace bridge {
 	  fsutil::File objectstat;
 	  fsutil::GetFileInformation(objectpath, objectstat);
 	  if (objectstat.type != "d") {
-		wOpenObject(objectpath);
+		wOpenObjectDefault(objectpath);
 		return;
 	  }
 	  

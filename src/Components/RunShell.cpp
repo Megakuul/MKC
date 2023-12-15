@@ -7,9 +7,6 @@
 
 #include "RunShell.hpp"
 #include "bridge.hpp"
-#include "gdk/gdkkeysyms.h"
-#include "gtkmm/treemodel.h"
-#include "gtkmm/treeviewcolumn.h"
 
 #define READY_COLOR "rgba(154, 222, 123, 0.3)"
 #define WAIT_COLOR "rgba(243, 182, 100, 0.3)"
@@ -17,6 +14,9 @@
 #define WAIT_TOOLTIP "Process still running, kill it by again pressing 'Enter'"
 
 #define PATH_KEY '%'
+
+#define SHELL_PATH "/bin/sh"
+#define SHELL_NAME "sh"
 
 using namespace std;
 
@@ -66,7 +66,7 @@ void RunShell::on_shell_activate() {
   if (pid == -1) return;
   if (pid == 0) {
 	chdir(current_browser->CurrentPath.c_str());
-	execl("/bin/sh", "sh", "-c", get_text().c_str(), (char*)NULL);
+	execl(SHELL_PATH, SHELL_NAME, "-c", get_text().c_str(), (char*)NULL);
 
 	exit(EXIT_FAILURE);
   } else {

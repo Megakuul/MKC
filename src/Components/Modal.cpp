@@ -1,14 +1,23 @@
+#include <cstdlib>
 #include <gtkmm.h>
 
 #include "fsutil.hpp"
 #include "Modal.hpp"
+#include "gdk/gdkkeysyms.h"
+#include "gdkmm/rectangle.h"
+#include "glibmm/main.h"
 #include "gtkmm/alignment.h"
+#include "gtkmm/enums.h"
 #include "pangomm/fontdescription.h"
 #include "string"
 #include "iostream"
 
-using namespace std;
+#define FILE_KEY "$"
 
+#define SHELL_PATH "/bin/sh"
+#define SHELL_NAME "sh"
+
+using namespace std;
 
 string ShowInputDial(Gtk::Window *Parent, string label) {
   Gtk::MessageDialog dial(*Parent, label, false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_OK_CANCEL);
@@ -136,6 +145,45 @@ void ShowErrDial(Gtk::Window *Parent, string label) {
 
 	dial.run();
 
+	return false;
+  });
+}
+
+void ShowRunDial(Gtk::Widget &Parent, Gdk::Rectangle rect, string file) {
+  Glib::signal_idle().connect([&Parent, rect, file]() {
+	auto popover = Gtk::make_managed<Gtk::Popover>();
+	Gtk::Entry* entry = Gtk::make_managed<Gtk::Entry>();
+	popover->add(*entry);
+
+	popover->set_relative_to(Parent);
+	popover->set_pointing_to(rect);
+	popover->set_position(Gtk::POS_BOTTOM);
+	popover->show_all();
+	
+	entry->signal_activate().connect([popover, entry, file]() {
+	  string key = FILE_KEY;
+	  string cmd = entry->get_text();
+	  if (cmd.empty()) {
+		popover->hide();
+		return;
+	  }
+
+	  size_t pos = 0;
+	  while ((pos = cmd.find(key, pos)) != string::npos) {
+		cmd.replace(pos, key.length(), file);
+		pos += file.length();
+	  }
+
+	  pid_t pid = fork();
+	  if (pid == -1) return;
+	  if (pid == 0) {
+		execl(SHELL_PATH, SHELL_NAME, "-c", cmd.c_str(), (char*)NULL);
+
+		exit(EXIT_FAILURE);
+	  }
+	  popover->hide();
+	  return;
+	});
 	return false;
   });
 }

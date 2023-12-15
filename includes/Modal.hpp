@@ -1,6 +1,7 @@
 #ifndef MODAL_H
 #define MODAL_H
 
+#include "gdkmm/rectangle.h"
 #include <gtkmm.h>
 #include <string>
 #include <fsutil.hpp>
@@ -54,5 +55,16 @@ fsutil::OP ShowDelConfirmDial(Gtk::Window *Parent);
  * @param label text to display
  */
 void ShowErrDial(Gtk::Window *Parent, std::string label);
+
+/**
+ * Creates a small run shell at the position of the cursor
+ *
+ * This dialog is thread safe and can be called from threads different to the
+ * Main-Thread
+ * @param Parent Widget where the popover is used
+ * @param rect Rectangle the popover is pointing to
+ * @param file Current file that is made available through '$' in the shell
+ */
+void ShowRunDial(Gtk::Widget &Parent, Gdk::Rectangle rect, std::string file);
 
 #endif

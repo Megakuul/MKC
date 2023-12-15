@@ -10,8 +10,10 @@
 #include <mutex>
 
 #include "Browser.hpp"
+#include "Modal.hpp"
 #include "bridge.hpp"
 #include "fsutil.hpp"
+#include "gdkmm/rectangle.h"
 
 // update interval of the filebrowser in milliseconds
 #define BROWSER_UPDATE_INTERVAL 75
@@ -36,11 +38,26 @@ Browser::Browser(Gtk::Window *Parent, string basePath, Browser *&currentBrowser,
   // This function is handling the entering of directorys and files
   signal_row_activated().connect([this, pathEntry, Parent](const Gtk::TreeModel::Path& path, Gtk::TreeViewColumn* column) {
     auto iter = get_model()->get_iter(path);
+	string object_name = iter->get_value(m_columns.name);
+	filesystem::path object_path = CurrentPath / object_name;
 
-    string name = iter->get_value(m_columns.name);
-	bridge::wNavigate(Parent, this, pathEntry, CurrentPath / name);
+	if (iter->get_value(m_columns.type) == "d") {
+	  bridge::wNavigate(Parent, this, pathEntry, object_path);
+	} else {
+	  Gdk::Rectangle rect;
+	  // Skip one path, to balance the header row that is not counted
+	  Gtk::TreeModel::Path next_path;
+	  Gtk::TreeModel::iterator next_iter = ++(get_model()->get_iter(path));
+	  if (next_iter)
+		next_path = get_model()->get_path(next_iter);
+	  else
+		next_path = path;
+	  // Get rect (next_path -> horizontal, column -> vertical)
+	  get_background_area(next_path, *column, rect);
+	  // Start Object Run Dial
+	  bridge::wOpenObjectRun(this, &rect, object_path);
+	}
   });
-  
 
   // Name of the element
   auto* nameRenderer = Gtk::manage(new Gtk::CellRendererText());
