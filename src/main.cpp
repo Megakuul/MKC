@@ -10,8 +10,8 @@
 #include "bridge.hpp"
 #include "keyhandler.hpp"
 
-#define COMPLETION_FILE_PATH "/usr/share/mkc/completions"
-#define ICON_PATH "/usr/share/mkc/favicon.png"
+#define COMPLETION_FILE_PATH "/usr/local/share/mkc/completions"
+#define ICON_PATH "/usr/local/share/mkc/favicon.png"
 
 #define BACKGROUND_COLOR "rgba(107, 82, 82, 0.212)"
 
