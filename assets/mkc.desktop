@@ -2,6 +2,6 @@
 Type=Application
 Name=Megakuul Commander
 Comment=MKC
-Exec=/usr/bin/mkc
-Icon=/usr/share/mkc/favicon.png
+Exec=/usr/local/bin/mkc
+Icon=/usr/local/share/mkc/favicon.png
 Terminal=false
