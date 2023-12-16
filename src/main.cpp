@@ -2,12 +2,16 @@
 #include <iostream>
 #include <ctime>
 #include <filesystem>
+#include <fstream>
 
 #include "fsutil.hpp"
 #include "main.hpp"
 #include "Toolbar.hpp"
 #include "bridge.hpp"
 #include "keyhandler.hpp"
+
+#define COMPLETION_FILE_PATH "/usr/share/mkc/completions"
+#define ICON_PATH "/usr/share/mkc/favicon.png"
 
 #define BACKGROUND_COLOR "rgba(107, 82, 82, 0.212)"
 
@@ -119,20 +123,22 @@ int main(int argc, char *argv[])
 {
   auto app = Gtk::Application::create(argc, argv, "mkc.megakuul.ch");
 
-  // TODO: Read additional completions from e.g. /etc/mkc/completions.conf
-  vector<Glib::ustring> run_completions = {
-	"zip ",
-	"unzip ",
-	"gzip ",
-	"gunzip ",
-	"tar -czvf ",
-	"tar -xzvf ",
-  };
+  vector<Glib::ustring> completions;
+  
+  ifstream completions_file(COMPLETION_FILE_PATH);
+  if (!completions_file.is_open()) {
+	cerr << "Error loading completions from: " << COMPLETION_FILE_PATH << endl;
+  } else {
+	string completion;
+	while(getline(completions_file, completion)) {
+	  completions.push_back(completion);
+	}
+  }
 
-  MainWindow window(run_completions);
+  MainWindow window(completions);
 
   GError *error = NULL;
-  GdkPixbuf *favicon = gdk_pixbuf_new_from_file("/usr/share/mkc/favicon.png", &error);
+  GdkPixbuf *favicon = gdk_pixbuf_new_from_file(ICON_PATH, &error);
   if (!favicon) {
 	cerr << "Error loading icon: " << error->message << endl;
 	g_error_free(error);

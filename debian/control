@@ -2,10 +2,10 @@ Source: mkc
 Section: utils
 Priority: optional
 Maintainer: Megakuul <megakuul@gmx.ch>
-Build-Depends: debhelper (>= 9), clang, make, cmake, libgtkmm-3.0-dev, zlib1g-dev
+Build-Depends: debhelper (>= 9), clang, make, cmake, libgtkmm-3.0-dev
 Standards-Version: 4.1.4
 
 Package: mkc
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libgtkmm-3.0-1v5 (>= 3.22), zlib1g
+Depends: ${shlibs:Depends}, ${misc:Depends}, libgtkmm-3.0-1v5 (>= 3.22)
 Description: Megakuul Commander - Simple file browser designed to speed up productivity.

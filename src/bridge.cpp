@@ -2,8 +2,6 @@
 
 #include <exception>
 #include <gtkmm.h>
-#include <stdexcept>
-#include <system_error>
 #include <string>
 #include <iostream>
 #include <filesystem>
@@ -13,11 +11,10 @@
 #include <istream>
 
 #include "bridge.hpp"
+#include "PathEntry.hpp"
 #include "fsutil.hpp"
 #include "Modal.hpp"
 #include "Browser.hpp"
-#include "gdkmm/rectangle.h"
-#include "gtkmm/widget.h"
 #include "uritopath.h"
 
 using namespace std;
@@ -231,7 +228,7 @@ namespace bridge {
     mainWindow->set_focus(*newBrowser);
   }
 
-  void  wNavigate(Gtk::Window* Parent, Browser* browser, Gtk::Entry *pathentry, fs::path objectpath) {
+  void  wNavigate(Gtk::Window* Parent, Browser* browser, PathEntry *pathentry, fs::path objectpath) {
     try {
 	  fsutil::File objectstat;
 	  fsutil::GetFileInformation(objectpath, objectstat);
@@ -247,6 +244,9 @@ namespace bridge {
       browser->CurrentPath = objectpath;
       pathentry->set_text(browser->CurrentPath.c_str());
 	  pathentry->set_position(-1);
+
+	  // Add path to the completions of the pathentry
+	  pathentry->AddCompletion(browser->CurrentPath);
 
       // Disable Sorting before adding elements (otherwise the performance of the list suffers)
       browser->DisableSorting();

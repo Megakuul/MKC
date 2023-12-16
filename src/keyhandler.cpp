@@ -1,6 +1,7 @@
 #include <gtkmm.h>
 
 #include "RunShell.hpp"
+#include "PathEntry.hpp"
 #include "bridge.hpp"
 #include "keyhandler.hpp"
 #include "fsutil.hpp"
@@ -13,7 +14,7 @@ bool HandleKeyPress(
 	Browser* Browser_1,
 	Browser* Browser_2,
 	Toolbar* Toolbar,
-	Gtk::Entry* Pathentry,
+	PathEntry* Pathentry,
     RunShell* Runentry) {
   
   if (event->state & GDK_CONTROL_MASK) {

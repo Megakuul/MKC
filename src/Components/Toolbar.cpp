@@ -4,6 +4,7 @@
 #include <utility>
 
 #include "Toolbar.hpp"
+#include "PathEntry.hpp"
 #include "Modal.hpp"
 #include "bridge.hpp"
 #include "Browser.hpp"
@@ -11,7 +12,7 @@
 
 using namespace std;
 
-Toolbar::Toolbar(Gtk::Window *Parent, Gtk::Entry *Pathentry, Browser *&CurrentBrowser)
+Toolbar::Toolbar(Gtk::Window *Parent, PathEntry *Pathentry, Browser *&CurrentBrowser)
   : AddFileBtn(), AddDirBtn(), RenameObjBtn(), DeleteObjBtn(), RecoverObjBtn(), CopyObjBtn(), MoveObjBtn(), ModifyObjBtn(), SplitItem(), PMenuBtn() {
     set_name("toolbar");
 

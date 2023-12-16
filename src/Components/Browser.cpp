@@ -11,16 +11,16 @@
 
 #include "Browser.hpp"
 #include "Modal.hpp"
+#include "PathEntry.hpp"
 #include "bridge.hpp"
 #include "fsutil.hpp"
-#include "gdkmm/rectangle.h"
 
 // update interval of the filebrowser in milliseconds
 #define BROWSER_UPDATE_INTERVAL 75
 
 using namespace std;
 
-Browser::Browser(Gtk::Window *Parent, string basePath, Browser *&currentBrowser, Browser *remoteBrowser, Gtk::Entry *pathEntry) : 
+Browser::Browser(Gtk::Window *Parent, string basePath, Browser *&currentBrowser, Browser *remoteBrowser, PathEntry *pathEntry) : 
   CurrentPath(basePath), RemoteBrowser(remoteBrowser), m_parent(Parent)  {
   
   m_listStore = Gtk::ListStore::create(m_columns);

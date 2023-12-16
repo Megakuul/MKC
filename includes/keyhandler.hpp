@@ -2,8 +2,10 @@
 #define H_KEYHANDLER
 
 #include <gtkmm.h>
+
 #include "Browser.hpp"
 #include "RunShell.hpp"
+#include "PathEntry.hpp"
 #include "Toolbar.hpp"
 
 #define ADD_FILE_KEY GDK_KEY_1
@@ -66,7 +68,7 @@ bool HandleKeyPress(
 	Browser* Browser_1,
 	Browser* Browser_2,
 	Toolbar* Toolbar,
-	Gtk::Entry* Pathentry,
+	PathEntry* Pathentry,
     RunShell* Runentry);
 
 #endif

@@ -1,0 +1,8 @@
+tar -czvf 
+zip -r 
+gzip 
+tar -xzvf 
+unzip 
+gunzip 
+sed -i 's/old/new/g' 
+find . -type f -name "*" -exec sed -i 's/old/new/g' {} +

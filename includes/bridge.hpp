@@ -7,7 +7,7 @@
 
 #include "Browser.hpp"
 #include "Toolbar.hpp"
-#include "gdkmm/rectangle.h"
+#include "PathEntry.hpp"
 
 namespace bridge {
 
@@ -60,7 +60,7 @@ namespace bridge {
   /**
    * Changes the active/current directory for the provided browser
    */
-  void wNavigate(Gtk::Window* Parent, Browser* browser, Gtk::Entry *pathentry, std::filesystem::path objectpath);
+  void wNavigate(Gtk::Window* Parent, Browser* browser, PathEntry *pathentry, std::filesystem::path objectpath);
 
   /**
    * Changes the active/current Browser

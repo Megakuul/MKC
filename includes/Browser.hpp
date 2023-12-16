@@ -10,11 +10,12 @@
 #include <thread>
 
 #include "fsutil.hpp"
+#include "PathEntry.hpp"
 
 class Browser : public Gtk::TreeView {
 
 public:
-  Browser(Gtk::Window *Parent, std::string basePath, Browser *&currentBrowser, Browser *remoteBrowser, Gtk::Entry *pathEntry);
+  Browser(Gtk::Window *Parent, std::string basePath, Browser *&currentBrowser, Browser *remoteBrowser, PathEntry *pathEntry);
 
   ~Browser();
 

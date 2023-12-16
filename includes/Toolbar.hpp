@@ -5,10 +5,11 @@
 #include <queue>
 
 #include "Browser.hpp"
+#include "PathEntry.hpp"
 
 class Toolbar : public Gtk::Toolbar {
 public:
-  Toolbar(Gtk::Window *Parent, Gtk::Entry *Pathentry, Browser*& CurrentBrowser);
+  Toolbar(Gtk::Window *Parent, PathEntry *Pathentry, Browser*& CurrentBrowser);
 
   size_t init_process();
   void update_process(size_t id, double progress);
