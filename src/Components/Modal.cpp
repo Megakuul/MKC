@@ -3,12 +3,6 @@
 
 #include "fsutil.hpp"
 #include "Modal.hpp"
-#include "gdk/gdkkeysyms.h"
-#include "gdkmm/rectangle.h"
-#include "glibmm/main.h"
-#include "gtkmm/alignment.h"
-#include "gtkmm/enums.h"
-#include "pangomm/fontdescription.h"
 #include "string"
 #include "iostream"
 
@@ -161,6 +155,7 @@ void ShowRunDial(Gtk::Widget &Parent, Gdk::Rectangle rect, string file) {
 	popover->show_all();
 	
 	entry->signal_activate().connect([popover, entry, file]() {
+	  string prepared_file = '"' + file + '"';
 	  string key = FILE_KEY;
 	  string cmd = entry->get_text();
 	  if (cmd.empty()) {
@@ -170,10 +165,10 @@ void ShowRunDial(Gtk::Widget &Parent, Gdk::Rectangle rect, string file) {
 
 	  size_t pos = 0;
 	  while ((pos = cmd.find(key, pos)) != string::npos) {
-		cmd.replace(pos, key.length(), file);
-		pos += file.length();
+		cmd.replace(pos, key.length(), prepared_file);
+		pos += prepared_file.length();
 	  }
-
+	  
 	  pid_t pid = fork();
 	  if (pid == -1) return;
 	  if (pid == 0) {
