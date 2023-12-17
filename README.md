@@ -35,7 +35,6 @@ sudo apt remove mkc
 
 Build from *PKGBUILD*:
 ```bash
-git clone https://github.com/megakuul/mkc.git 
 curl -o PKGBUILD https://raw.githubusercontent.com/Megakuul/MKC/main/arch/PKGBUILD
 makepkg -si
 ```
@@ -78,10 +77,137 @@ sudo dpkg -i MKC.deb
 
 For *arch* distros, you must again fetch the install script and execute it:
 ```bash
-git clone https://github.com/megakuul/mkc.git 
 curl -o PKGBUILD https://raw.githubusercontent.com/Megakuul/MKC/main/arch/PKGBUILD
 makepkg -si
 ```
+
+## Usage
+
+The use of mkc is very trivial, but the usual components are described below.
+
+**Focus left Browser**
+
+*Shortcut*: CTRL + q
+
+*Description*: 
+Focuses the left browser, when focusing the browser, operations will always have the path of this browser as "context".
+
+
+**Focus right Browser**
+
+*Shortcut*: CTRL + e
+
+*Description*: 
+Focuses the right browser, when focusing the browser, operations will always have the path of this browser as "context".
+
+
+**Focus PathEntry**
+
+*Shortcut*: CTRL + t
+
+*Description*: 
+Focuses the PathEntry. The PathEntry is used to change the path of the current browser.
+When opening files, the PathEntry will attempt to open the files with 'xdg-open'.
+
+
+Completions for the PathEntry are generated when navigating to directories during operation.
+
+
+**Focus RunShell**
+
+*Shortcut*: CTRL + r
+
+*Description*: 
+Focuses the RunShell. The RunShell is used to execute shell commands with the "context" of the current browser.
+Operations are started from "/bin/sh". To kill the running process, press "enter" again.
+
+
+Completions for the RunShell are loaded from "/usr/local/share/mkc/completions" at programm start.
+
+
+**Ascend Layer**
+
+*Shortcut*: CTRL + z
+
+*Description*: 
+Navigates one directory level higher.
+
+
+**Add File**
+
+*Shortcut*: CTRL + 1
+
+*Description*: 
+Creates a empty file in the current directory.
+
+
+**Add Directory**
+
+*Shortcut*: CTRL + 2
+
+*Description*: 
+Creates a directory in the current directory.
+
+
+**Rename Files**
+
+*Shortcut*: CTRL + 3
+
+*Description*: 
+Changes the provided string to the new string in the file name of all selected files.
+
+
+**Modify Files**
+
+*Shortcut*: CTRL + 4
+
+*Description*: 
+Modifies file attributes in all selected files.
+
+
+**Direct File copying**
+
+*Shortcut*: CTRL + k
+
+*Description*: 
+Copies all selected files to the other browser. Conflicting objects are skipped.
+
+
+**Direct File moving**
+
+*Shortcut*: CTRL + m
+
+*Description*: 
+Moves all selected files to the other browser. Conflicting objects are skipped.
+
+
+**Delete Files**
+
+*Shortcut*: CTRL + Backspace
+
+*Description*: 
+Deletes all selected files (or moves them to the recycle bin if selected).
+
+
+**Restore Files**
+
+*Shortcut*: CTRL + b
+
+*Description*: 
+Restores all selected ".mkc" objects. If you are not inside the recycle bin directory, it will move you there first.
+
+
+**Opening Files**
+
+*Description*:
+If you open a file via the browser, you will see a dialog in which a regular shell command can be entered. The absolute path of the file you want to start is accessible through the "$" char.
+
+Example usage:
+- gedit $
+- mousepad $
+- emacs $
+
+The '$' char is then expanded into a format like "/somedir/some file".
 
 ## Build arch package
 
