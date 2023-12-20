@@ -8,9 +8,17 @@ on:
 jobs:
   build-packages:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Get current version
+        id: get_version
+        run: |
+          # Initial fetch the output name before the changelog file is manipulated
+          echo "::set-output name=version::$(dpkg-parsechangelog -S Version)"
 
       - name: Install debian packaging tools and makedependencies
         run: |
@@ -24,8 +32,7 @@ jobs:
 
       - name: Build ubuntu source packages
         run: |
-          # Get version
-          version=$(dpkg-parsechangelog -S Version)
+          version=${{ steps.get_version.outputs.version }}
           # This will build the source for all specified ubuntu releases
           # Commaseperated list of ubuntu releases must be defined as repository variable
           IFS=',' read -ra RELEASE <<< "${{ vars.UBUNTU_BUILD_RELEASES }}"
@@ -75,9 +82,9 @@ jobs:
       - name: Upload Ubuntu PPA package
         run: |
           cd MKC
-          version=$(dpkg-parsechangelog -S Version)
+          version=${{ needs.build-packages.outputs.version }}
           cd ..
-          IFS=',' read -ra RELEASE <<< "${{ env.UBUNTU_BUILD_RELEASES }}"
+          IFS=',' read -ra RELEASE <<< "${{ vars.UBUNTU_BUILD_RELEASES }}"
           for REL in "${RELEASE[@]}"; do
             dput ppa:megakuul/mkc "mkc_${version}-${REL}_source.changes"
           done
@@ -97,7 +104,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd MKC
-          version=$(dpkg-parsechangelog -S Version)
+          version=${{ needs.build-packages.outputs.version }}
           gh release create latest --title "Latest Release (Version: $version)"
 
       - name: Upload 'latest' Debian release package
