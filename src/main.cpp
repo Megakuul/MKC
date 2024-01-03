@@ -13,8 +13,6 @@
 #define COMPLETION_FILE_PATH "/usr/local/share/mkc/completions"
 #define ICON_PATH "/usr/local/share/mkc/favicon.png"
 
-#define BACKGROUND_COLOR "rgba(107, 82, 82, 0.212)"
-
 using namespace std;
 namespace fs = filesystem;
 
@@ -32,7 +30,7 @@ MainWindow::MainWindow(vector<Glib::ustring> RunCompletions) : m_MainBox(Gtk::OR
                            CurrentBrowser(&m_Browser_1) {
 
   set_title("Megakuul Commander");
-  override_background_color(Gdk::RGBA(BACKGROUND_COLOR));
+	// override_background_color(Gdk::RGBA("rgba(68 71 90)")); // Custom color will lead to problems on Qt Desktop Environments (e.g. KDE Plasma)
   set_border_width(0);
   set_default_size(1000, 800);
 
